@@ -68,9 +68,20 @@ END_DATADESC()
 
 void CFuncTankTrain::Spawn( void )
 {
-	m_takedamage = DAMAGE_YES;
+	m_takedamage = DAMAGE_YES; /* BM: true;? */
 	BaseClass::Spawn();
 }
+
+/* BM: What? I don't even...
+// Filter out damage messages that don't contain blast damage (impervious to other forms of attack)
+int	CFuncTankTrain::OnTakeDamage( const CTakeDamageInfo &info )
+{
+	if ( ! (info.GetDamageType() & DMG_BLAST) )
+		return 0;
+	return BaseClass::OnTakeDamage( info );
+}
+
+//*/
 
 //-----------------------------------------------------------------------------
 // Purpose: Called when the train is killed.

@@ -980,7 +980,7 @@ extern "C"
 size_t __crtDebugFillThreshold = 0;
 
 extern "C" void * __cdecl _heap_alloc_base (size_t size) {
-    assert(0);
+    Assert(0);
 	return NULL;
 }
 
@@ -995,14 +995,14 @@ void * __cdecl _heap_alloc_dbg( size_t nSize, int nBlockUse, const char * szFile
 static void * __cdecl realloc_help( void * pUserData, size_t * pnNewSize, int nBlockUse,const char * szFileName,
 				int nLine, int fRealloc )
 {
-		assert(0); // Shouldn't be needed
+		Assert(0); // Shouldn't be needed
 		return NULL;
 }
 #else
 static void * __cdecl realloc_help( void * pUserData, size_t nNewSize, int nBlockUse, const char * szFileName,
                   int nLine, int fRealloc)
 {
-		assert(0); // Shouldn't be needed
+		Assert(0); // Shouldn't be needed
 		return NULL;
 }
 #endif
@@ -1020,7 +1020,7 @@ void __cdecl _free_dbg_nolock( void * pUserData, int nBlockUse)
 
 _CRT_ALLOC_HOOK __cdecl _CrtGetAllocHook ( void)
 {
-		assert(0); 
+		Assert(0); 
         return NULL;
 }
 
@@ -1033,7 +1033,7 @@ static int __cdecl CheckBytes( unsigned char * pb, unsigned char bCheck, size_t 
 
 _CRT_DUMP_CLIENT __cdecl _CrtGetDumpClient ( void)
 {
-		assert(0); 
+		Assert(0); 
         return NULL;
 }
 
@@ -1076,7 +1076,7 @@ void __cdecl _aligned_free_dbg( void * memblock)
 
 size_t __cdecl _CrtSetDebugFillThreshold( size_t _NewDebugFillThreshold)
 {
-	assert(0);
+	Assert(0);
     return 0;
 }
 

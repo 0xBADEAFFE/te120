@@ -102,7 +102,9 @@ void WeaponsResource::LoadWeaponSprites( WEAPON_FILE_INFO_HANDLE hWeaponFileInfo
 	pWeaponInfo->iconCrosshair = NULL;
 	pWeaponInfo->iconAutoaim = NULL;
 	pWeaponInfo->iconSmall = NULL;
-	pWeaponInfo->iconCrosshairUse = NULL;//TE120
+#ifdef TE120
+	pWeaponInfo->iconCrosshairUse = NULL; // TE120
+#endif // TE120
 
 	char sz[128];
 	Q_snprintf(sz, sizeof( sz ), "scripts/%s", pWeaponInfo->szClassName);
@@ -133,11 +135,13 @@ void WeaponsResource::LoadWeaponSprites( WEAPON_FILE_INFO_HANDLE hWeaponFileInfo
 		pWeaponInfo->iconAutoaim = gHUD.AddUnsearchableHudIconToList( *p );
 	}
 //TE120--
+#ifdef TE120
 	p = FindHudTextureInDict( tempList, "crosshair_use" );
 	if ( p )
 	{
 		pWeaponInfo->iconCrosshairUse = gHUD.AddUnsearchableHudIconToList( *p );
 	}
+#endif // TE120
 //TE120--
 	p = FindHudTextureInDict( tempList, "zoom" );
 	if ( p )

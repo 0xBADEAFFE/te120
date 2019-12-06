@@ -123,8 +123,12 @@ public:
 
 	DECLARE_DATADESC();
 //TE120--
+#ifdef TE120
 	// { return Hints() ? Hints()->HintMessage( hint, bForce ) : false; }
 	virtual int	ObjectCaps( void ) { return HasSpawnFlags( SF_TRACKTRAIN_NOCONTROL ) ? BaseClass::ObjectCaps() : BaseClass::ObjectCaps() | FCAP_DIRECTIONAL_USE | FCAP_USE_ONGROUND; }
+#else
+	virtual int	ObjectCaps( void ) { return BaseClass::ObjectCaps() | FCAP_DIRECTIONAL_USE | FCAP_USE_ONGROUND; }
+#endif // TE120
 //TE120--
 	virtual void	OnRestore( void );
 

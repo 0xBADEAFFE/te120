@@ -78,8 +78,8 @@ public:
 	matrix3x4_t	m_AttachmentToWorld;
 	QAngle	m_angRotation;
 	Vector	m_vOriginVelocity;
-	int		m_nLastFramecount : 31;
-	int		m_bAnglesComputed : 1;
+	int		m_nLastFramecount = 31;
+	int		m_bAnglesComputed = 1;
 };
 
 
@@ -658,7 +658,9 @@ public:
 	virtual void Release( void );
 	virtual void SetupWeights( const matrix3x4_t *pBoneToWorld, int nFlexWeightCount, float *pFlexWeights, float *pFlexDelayedWeights );
 	virtual void ImpactTrace( trace_t *pTrace, int iDamageType, const char *pCustomImpactName );
-	virtual void GCPush( Vector *start, float radius );//TE120
+#ifdef TE120
+	virtual void GCPush( Vector *start, float radius ); // TE120
+#endif // TE120
 	void ClientThink( void );
 	void ReleaseRagdoll( void ) { m_bReleaseRagdoll = true;	}
 	bool ShouldSavePhysics( void ) { return true; }
@@ -745,14 +747,17 @@ inline CStudioHdr *C_BaseAnimating::GetModelPtr() const
 
 #ifdef _DEBUG
 	// GetModelPtr() is often called before OnNewModel() so go ahead and set it up first chance.
-//	static IDataCacheSection *pModelCache = datacache->FindSection( "ModelData" );
-//	AssertOnce( pModelCache->IsFrameLocking() );
+	// static IDataCacheSection *pModelCache = datacache->FindSection( "ModelData" );
+	// AssertOnce( pModelCache->IsFrameLocking() );
 #endif
 	if ( !m_pStudioHdr )
 	{
 		const_cast<C_BaseAnimating *>(this)->LockStudioHdr();
 	}
+	
 	Assert( m_pStudioHdr ? m_pStudioHdr->GetRenderHdr() == mdlcache->GetStudioHdr(m_hStudioHdr) : m_hStudioHdr == MDLHANDLE_INVALID );
+	if (m_pStudioHdr == NULL)
+		return NULL;
 	return m_pStudioHdr;
 }
 

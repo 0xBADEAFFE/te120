@@ -473,6 +473,11 @@ void C_BaseViewModel::AddEntity( void )
 	}
 }
 
+bool C_BaseViewModel::ShouldReceiveProjectedTextures(int flags)
+{
+	return ( flags & SHADOW_FLAGS_PLAYER_FLASHLIGHT ) == 0;
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 //-----------------------------------------------------------------------------

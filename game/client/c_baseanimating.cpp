@@ -377,8 +377,10 @@ void C_ClientRagdoll::OnRestore( void )
 }
 
 //TE120--
+#ifdef TE120
 void C_ClientRagdoll::GCPush( Vector *start, float radius )
 {
+	DevMsg("C_ClientRagdoll::GCPush\n");
 	if ( m_pRagdoll )
 	{
 		ragdoll_t *pRagdollPhys = m_pRagdoll->GetRagdoll();
@@ -442,6 +444,7 @@ void C_ClientRagdoll::GCPush( Vector *start, float radius )
 		}
 	}
 }
+#endif // TE120
 //TE120--
 
 void C_ClientRagdoll::ImpactTrace( trace_t *pTrace, int iDamageType, const char *pCustomImpactName )
@@ -2135,7 +2138,7 @@ bool C_BaseAnimating::GetAttachment( int number, Vector &origin, QAngle &angles 
 	if ( !pData->m_bAnglesComputed )
 	{
 		MatrixAngles( pData->m_AttachmentToWorld, pData->m_angRotation );
-		pData->m_bAnglesComputed = true;
+		pData->m_bAnglesComputed = 1;
 	}
 	angles = pData->m_angRotation;
 	MatrixPosition( pData->m_AttachmentToWorld, origin );
@@ -3057,6 +3060,7 @@ struct BoneAccess
 	char const *tag;
 };
 
+static CThreadFastMutex g_BoneAccessMutex;
 static CUtlVector< BoneAccess >		g_BoneAccessStack;
 static BoneAccess g_BoneAcessBase;
 
@@ -3071,6 +3075,8 @@ bool C_BaseAnimating::IsBoneAccessAllowed() const
 // (static function)
 void C_BaseAnimating::PushAllowBoneAccess( bool bAllowForNormalModels, bool bAllowForViewModels, char const *tagPush )
 {
+	AUTO_LOCK(g_BoneAccessMutex);
+
 	BoneAccess save = g_BoneAcessBase;
 	g_BoneAccessStack.AddToTail( save );
 
@@ -3082,6 +3088,8 @@ void C_BaseAnimating::PushAllowBoneAccess( bool bAllowForNormalModels, bool bAll
 
 void C_BaseAnimating::PopBoneAccess( char const *tagPop )
 {
+	AUTO_LOCK(g_BoneAccessMutex);
+
 	// Validate that pop matches the push
 	Assert( ( g_BoneAcessBase.tag == tagPop ) || ( g_BoneAcessBase.tag && g_BoneAcessBase.tag != ( char const * ) 1 && tagPop && tagPop != ( char const * ) 1 && !strcmp( g_BoneAcessBase.tag, tagPop ) ) );
 	int lastIndex = g_BoneAccessStack.Count() - 1;
@@ -3250,7 +3258,13 @@ bool C_BaseAnimating::OnInternalDrawModel( ClientModelRenderInfo_t *pInfo )
 //-----------------------------------------------------------------------------
 void C_BaseAnimating::DoInternalDrawModel( ClientModelRenderInfo_t *pInfo, DrawModelState_t *pState, matrix3x4_t *pBoneToWorldArray )
 {
-	if ( pState && pState->m_pRenderable && pState->m_pStudioHWData )
+#ifdef TE120
+	// NOTE: Causes crash? 
+	//if ( pState && pState->m_pRenderable && pState->m_pStudioHWData )
+	if ( pState )
+#else
+	if ( pState)
+#endif
 	{
 		modelrender->DrawModelExecute( *pState, *pInfo, pBoneToWorldArray );
 	}
@@ -3377,10 +3391,30 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
 		//FIXME: We should really use a named attachment for this
 		if ( m_Attachments.Count() > 0 )
 		{
+#if 0
+			Vector vAttachment;
+			QAngle dummyAngles;
+			GetAttachment( 1, vAttachment, dummyAngles );
+
+			// Make an elight
+			dlight_t *el = effects->CL_AllocElight( LIGHT_INDEX_MUZZLEFLASH + index );
+			el->origin = vAttachment;
+			el->radius = random->RandomInt( 32, 64 ); 
+			el->decay = el->radius / 0.05f;
+			el->die = gpGlobals->curtime + 0.05f;
+			el->color.r = 255;
+			el->color.g = 192;
+			el->color.b = 64;
+			el->color.exponent = 5;
+#else
+			// Muzzle Flash Lighting: https://developer.valvesoftware.com/wiki/Muzzle_Flash_Lighting
 			Vector vAttachment, vAng;
 			QAngle angles;
-			GetAttachment( 1, vAttachment, angles );
-
+#ifdef HL2_EPISODIC
+			GetAttachment( 1, vAttachment, angles ); // set 1 instead "attachment"
+#else
+			GetAttachment(attachment, vAttachment, angles);
+#endif
 			AngleVectors( angles, &vAng );
 			vAttachment += vAng * 2;
 
@@ -3390,12 +3424,21 @@ void C_BaseAnimating::ProcessMuzzleFlashEvent()
  				return;
 
 			dl->origin = vAttachment;
+#ifdef TE120
+			// magenta-ish color
+			dl->color.r = 231;
+			dl->color.g = 219;
+			dl->color.b = 14;
+#else
+			// realistic washed out yellow
 			dl->color.r = 252;
 			dl->color.g = 238;
 			dl->color.b = 128;
+#endif
 			dl->die = gpGlobals->curtime + 0.05f;
 			dl->radius = random->RandomFloat( 245.0f, 256.0f );
 			dl->decay = 512.0f;
+#endif
 		}
 	}
 }
@@ -3554,7 +3597,7 @@ void C_BaseAnimating::DoAnimationEvents( CStudioHdr *pStudioHdr )
 		}
 
 		// Necessary to get the next loop working
-		m_flPrevEventCycle = -0.01;
+		m_flPrevEventCycle = flEventCycle - 0.001f;
 	}
 
 	for (int i = 0; i < (int)seqdesc.numevents; i++)
@@ -4390,7 +4433,12 @@ void C_BaseAnimating::GetRenderBounds( Vector& theMins, Vector& theMaxs )
 			VectorCopy ( pStudioHdr->hull_max(), theMaxs);
 		}
 
-		mstudioseqdesc_t &seqdesc = pStudioHdr->pSeqdesc( GetSequence() );
+		int iSequence = GetSequence();
+
+		if (iSequence >= pStudioHdr->GetNumSeq())
+			iSequence = 0;
+
+		mstudioseqdesc_t& seqdesc = pStudioHdr->pSeqdesc(iSequence);
 		VectorMin( seqdesc.bbmin, theMins, theMins );
 		VectorMax( seqdesc.bbmax, theMaxs, theMaxs );
 	}
@@ -4983,6 +5031,8 @@ void C_BaseAnimating::Simulate()
 
 bool C_BaseAnimating::TestCollision( const Ray_t &ray, unsigned int fContentsMask, trace_t& tr )
 {
+	MDLCACHE_CRITICAL_SECTION();
+
 	if ( ray.m_IsRay && IsSolidFlagSet( FSOLID_CUSTOMRAYTEST ))
 	{
 		if (!TestHitboxes( ray, fContentsMask, tr ))

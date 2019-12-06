@@ -17,6 +17,9 @@
 #include "game.h"
 #include "vstdlib/random.h"
 #include "gamestats.h"
+#ifdef MUZZLE_SMOKE
+#include "particle_parse.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -171,6 +174,9 @@ CWeaponPistol::CWeaponPistol( void )
 //-----------------------------------------------------------------------------
 void CWeaponPistol::Precache( void )
 {
+#ifdef MUZZLE_SMOKE
+	PrecacheParticleSystem("weapon_muzzle_smoke");
+#endif
 	BaseClass::Precache();
 }
 
@@ -255,6 +261,15 @@ void CWeaponPistol::PrimaryAttack( void )
 
 	m_iPrimaryAttacks++;
 	gamestats->Event_WeaponFired( pOwner, true, GetClassname() );
+
+#ifdef MUZZLE_SMOKE
+	// Muzzle Smoke
+	if ((m_iClip1 % 5 == 0) && !((pOwner->GetAmmoCount(m_iPrimaryAmmoType) <= 0) && (m_iClip1 <= 1)))
+	{
+		// Start the muzzle smoking effect
+		DispatchParticleEffect("weapon_muzzle_smoke", PATTACH_POINT_FOLLOW, pOwner->GetViewModel(), "muzzle", true);
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------

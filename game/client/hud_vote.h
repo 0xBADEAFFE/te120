@@ -37,6 +37,7 @@ class VoteBarPanel : public vgui::Panel, public CGameEventListener
 	DECLARE_CLASS_SIMPLE( VoteBarPanel, vgui::Panel );
 
 	VoteBarPanel( vgui::Panel *parent, const char *panelName );
+	~VoteBarPanel() {}
 
 	virtual void Paint( void );
 	virtual void FireGameEvent( IGameEvent *event );
@@ -120,6 +121,7 @@ class CHudVote : public vgui::EditablePanel, public CHudElement
 	DECLARE_CLASS_SIMPLE( CHudVote, vgui::EditablePanel );
 
 	CHudVote( const char *pElementName );
+	~CHudVote() {}
 
 	virtual void	LevelInit( void );
 	virtual void	Init( void );

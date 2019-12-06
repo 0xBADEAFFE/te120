@@ -11,6 +11,9 @@
 #include "game.h"
 #include "in_buttons.h"
 #include "gamestats.h"
+#ifdef MUZZLE_SMOKE
+#include "particle_parse.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -113,6 +116,15 @@ void CHLMachineGun::PrimaryAttack( void )
 
 	// Register a muzzleflash for the AI
 	pPlayer->SetMuzzleFlashTime( gpGlobals->curtime + 0.5 );
+
+#ifdef MUZZLE_SMOKE
+	// Muzzle Smoke
+	if ((m_iClip1 % 5 == 0) && !((pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0) && (m_iClip1 <= 1)))
+	{
+		// Start the muzzle smoking effect
+		DispatchParticleEffect("weapon_muzzle_smoke_long", PATTACH_POINT_FOLLOW, pPlayer->GetViewModel(), "muzzle", true);
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------

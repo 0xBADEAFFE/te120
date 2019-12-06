@@ -309,8 +309,9 @@ void CNPC_PoisonZombie::Spawn( void )
 	m_pSlowBreathSound = ENVELOPE_CONTROLLER.SoundCreate( filter2, entindex(), CHAN_ITEM, "NPC_PoisonZombie.Moan1", ATTN_NORM );
 	ENVELOPE_CONTROLLER.Play( m_pSlowBreathSound, BREATH_VOL_MAX, 100 );
 
-//TE120--
 	int nCrabs = m_nCrabCount;
+//TE120--
+#ifdef TE120
 	m_nCrabCount = 0;
 	if ( !nCrabs )
 	{
@@ -321,6 +322,14 @@ void CNPC_PoisonZombie::Spawn( void )
 	}
 	else
 	{
+#else
+	if ( !nCrabs )
+	{
+		nCrabs = MAX_CRABS;
+	}
+	m_nCrabCount = 0;
+#endif // TE120
+
 		//
 		// Generate a random set of crabs based on the crab count
 		// specified by the level designer.
@@ -353,7 +362,9 @@ void CNPC_PoisonZombie::Spawn( void )
 			EnableCrab( i, ( nBitMask & ( 1 << i ) ) != 0 );
 		}
 //TE120--
+#ifdef TE120
 	}
+#endif // TE120
 }
 
 
@@ -714,6 +725,7 @@ void CNPC_PoisonZombie::HandleAnimEvent( animevent_t *pEvent )
 			pCrab->ThrowAt( vecEnemyEyePos );
 		}
 //TE120--
+#ifdef TE120
 		// Duplicate relationship to player
 		CBasePlayer *pPlayer = AI_GetSinglePlayer();
 		if ( pPlayer )
@@ -727,6 +739,7 @@ void CNPC_PoisonZombie::HandleAnimEvent( animevent_t *pEvent )
 			pCrab->SetName( this->GetEntityName() );
 			DevMsg("PoisonZombie: Duplicated relationship to player!\n");
 		}
+#endif // TE120
 //TE120--
 		if (m_nCrabCount == 0)
 		{

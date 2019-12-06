@@ -239,10 +239,12 @@ void CCredits::InputRollOutroCredits( inputdata_t &inputdata )
 	gamestats->Event_Credits();
 
 //TE120--
+#ifdef TE120
 	// Fire event for achievement: E120_CHAPTER_4
 	IGameEvent *event = gameeventmanager->CreateEvent( "chapter_4_complete" );
 	if ( event )
 		gameeventmanager->FireEvent( event );
+#endif // TE120
 //TE120--
 }
 

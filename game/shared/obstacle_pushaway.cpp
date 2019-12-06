@@ -15,9 +15,9 @@
 #endif // CSTRIKE_DLL
 
 //-----------------------------------------------------------------------------------------------------
-ConVar sv_pushaway_force( "sv_pushaway_force", "30000", SV_PUSH_CONVAR_FLAGS, "How hard physics objects are pushed away from the players on the server." );
+ConVar sv_pushaway_force("sv_pushaway_force", "50", FCVAR_CHEAT, "How hard physics objects are pushed away from the players on the server.");
 ConVar sv_pushaway_min_player_speed( "sv_pushaway_min_player_speed", "75", SV_PUSH_CONVAR_FLAGS, "If a player is moving slower than this, don't push away physics objects (enables ducking behind things)." );
-ConVar sv_pushaway_max_force( "sv_pushaway_max_force", "1000", SV_PUSH_CONVAR_FLAGS, "Maximum amount of force applied to physics objects by players." );
+ConVar sv_pushaway_max_force("sv_pushaway_max_force", "10000", FCVAR_CHEAT, "Maximum amount of force applied to physics objects by players.");
 ConVar sv_pushaway_clientside( "sv_pushaway_clientside", "0", SV_PUSH_CONVAR_FLAGS, "Clientside physics push away (0=off, 1=only localplayer, 1=all players)" );
 
 ConVar sv_pushaway_player_force( "sv_pushaway_player_force", "200000", SV_PUSH_CONVAR_FLAGS | FCVAR_CHEAT, "How hard the player is pushed away from physics objects (falls off with inverse square of distance)." );
@@ -316,17 +316,26 @@ void PerformObstaclePushaway( CBaseCombatCharacter *pPushingEntity )
 				continue;
 		}
 
+		if ( props[i]->GetCollisionGroup() != COLLISION_GROUP_PUSHAWAY )
+		{
+			continue;
+		}
+
 		IPhysicsObject *pObj = props[i]->VPhysicsGetObject();
 
 		if ( pObj )
 		{		
-			Vector vPushAway = (props[i]->WorldSpaceCenter() - pPushingEntity->WorldSpaceCenter());
+			Vector vPushAway = ( props[i]->WorldSpaceCenter() - pPushingEntity->GetAbsOrigin() );
 			vPushAway.z = 0;
 			
 			float flDist = VectorNormalize( vPushAway );
+			if ( flDist < 0.1f )
+			{
+				continue;
+			}
 			flDist = MAX( flDist, 1 );
 			
-			float flForce = sv_pushaway_force.GetFloat() / flDist;
+			float flForce = sv_pushaway_force.GetFloat() / flDist * pObj->GetMass();
 			flForce = MIN( flForce, sv_pushaway_max_force.GetFloat() );
 
 			pObj->ApplyForceOffset( vPushAway * flForce, pPushingEntity->WorldSpaceCenter() );

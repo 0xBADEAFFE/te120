@@ -66,8 +66,10 @@ BEGIN_DATADESC( CBaseButton )
 	DEFINE_INPUTFUNC( FIELD_VOID, "PressIn", InputPressIn ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "PressOut", InputPressOut ),
 //TE120--
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_VOID, "Enable", InputEnable ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "Disable", InputDisable ),
+#endif // TE120
 //TE120--
 
 	// Outputs
@@ -189,6 +191,7 @@ void CBaseButton::Unlock()
 }
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Start the spawner
 //-----------------------------------------------------------------------------
@@ -207,6 +210,7 @@ void CBaseButton::InputDisable( inputdata_t &inputdata )
 	RemoveEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
 	SetSolid( SOLID_NONE );
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------
@@ -921,6 +925,11 @@ void CRotButton::Spawn( void )
 	m_fRotating = TRUE;
 
 	SetUse(&CRotButton::ButtonUse);
+	
+	if (HasSpawnFlags(SF_BUTTON_LOCKED))
+	{
+		m_bLocked = true;
+	}
 
 	//
 	// If touching activates the button, set its touch function.
@@ -962,8 +971,10 @@ BEGIN_DATADESC( CMomentaryRotButton )
 	DEFINE_FIELD( m_sNoise, FIELD_SOUNDNAME ),
 	DEFINE_FIELD( m_bUpdateTarget, FIELD_BOOLEAN ),
 //TE120--
+#ifdef TE120
 	DEFINE_KEYFIELD( m_ls.sLockedSound, FIELD_SOUNDNAME, "locked_sound" ),
 	DEFINE_KEYFIELD( m_ls.sUnlockedSound, FIELD_SOUNDNAME, "unlocked_sound" ),
+#endif // TE120
 //TE120--
 
 	DEFINE_KEYFIELD( m_direction, FIELD_INTEGER, "StartDirection" ),
@@ -982,7 +993,9 @@ BEGIN_DATADESC( CMomentaryRotButton )
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetPositionImmediately", InputSetPositionImmediately ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "_DisableUpdateTarget", InputDisableUpdateTarget ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "_EnableUpdateTarget", InputEnableUpdateTarget ),
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetSpeed", InputSetSpeed ),//TE120
+#endif // TE120	
 	// Outputs
 	DEFINE_OUTPUT( m_Position, "Position" ),
 	DEFINE_OUTPUT( m_OnUnpressed, "OnUnpressed" ),
@@ -1093,6 +1106,7 @@ void CMomentaryRotButton::Spawn( void )
 
 	m_bDisabled = false;
 //TE120--
+#ifdef TE120
 	// get door button sounds, for doors which require buttons to open
 	if ( m_bLockedSound )
 	{
@@ -1107,6 +1121,7 @@ void CMomentaryRotButton::Spawn( void )
 	{
 		PrecacheScriptSound( STRING( m_sNoise ) );
 	}
+#endif // TE120
 //TE120--
 }
 
@@ -1172,6 +1187,7 @@ float CMomentaryRotButton::GetPos( const QAngle &vecAngles )
 }
 
 //TE120--
+#ifdef TE120
 //------------------------------------------------------------------------------
 // Purpose :
 // Input   : flSpeed
@@ -1183,6 +1199,7 @@ void CMomentaryRotButton::InputSetSpeed( inputdata_t &inputdata )
 	if ( m_flSpeed <= 0 )
 		m_flSpeed = 100;
 }
+#endif // TE120
 //TE120--
 
 //------------------------------------------------------------------------------
@@ -1633,11 +1650,13 @@ void CMomentaryRotButton::Enable( void )
 {
 	m_bDisabled = false;
 //TE120--
+#ifdef TE120
 	if ( HasSpawnFlags( SF_ROTBUTTON_NOTSOLID ) )
 	{
 		AddEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
 		SetSolid( SOLID_VPHYSICS );
 	}
+#endif // TE120
 //TE120--
 }
 
@@ -1649,10 +1668,12 @@ void CMomentaryRotButton::Disable( void )
 {
 	m_bDisabled = true;
 //TE120--
+#ifdef TE120
 	if ( HasSpawnFlags( SF_ROTBUTTON_NOTSOLID ) )
 	{
 		RemoveEFlags( EFL_USE_PARTITION_WHEN_NOT_SOLID );
 		SetSolid( SOLID_NONE );
 	}
+#endif // TE120
 //TE120--
 }

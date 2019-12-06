@@ -26,7 +26,9 @@
 #include <algorithm>
 #include "tier0/valve_minmax_on.h"
 
-#define USE_DETAIL_SHAPES //TE120
+#if defined(DOD_DLL) || defined(CSTRIKE_DLL) || defined(TE120) // TE120
+#define USE_DETAIL_SHAPES
+#endif
 
 #ifdef USE_DETAIL_SHAPES
 #include "engine/ivdebugoverlay.h"
@@ -45,14 +47,18 @@
 //-----------------------------------------------------------------------------
 struct model_t;
 
-ConVar cl_detaildistdesired( "cl_detaildistdesired", "2000", 0, "Desired Distance" );//TE120
-ConVar cl_detaildist( "cl_detaildist", "2000", 0, "Distance at which detail props are no longer visible" );//TE120
+#ifdef TE120
+ConVar cl_detaildistdesired( "cl_detaildistdesired", "2000", 0, "Desired Distance" ); // TE120
+ConVar cl_detaildist( "cl_detaildist", "2000", 0, "Distance at which detail props are no longer visible" ); // TE120
+#else
+ConVar cl_detaildist( "cl_detaildist", "1200", 0, "Distance at which detail props are no longer visible" );
+#endif // TE120
 ConVar cl_detailfade( "cl_detailfade", "400", 0, "Distance across which detail props fade in" );
 #if defined( USE_DETAIL_SHAPES )
-ConVar cl_detail_max_sway( "cl_detail_max_sway", "0", FCVAR_ARCHIVE, "Amplitude of the detail prop sway" );
-ConVar cl_detail_avoid_radius( "cl_detail_avoid_radius", "0", FCVAR_ARCHIVE, "radius around detail sprite to avoid players" );
-ConVar cl_detail_avoid_force( "cl_detail_avoid_force", "0", FCVAR_ARCHIVE, "force with which to avoid players ( in units, percentage of the width of the detail sprite )" );
-ConVar cl_detail_avoid_recover_speed( "cl_detail_avoid_recover_speed", "0", FCVAR_ARCHIVE, "how fast to recover position after avoiding players" );
+ConVar cl_detail_max_sway( "cl_detail_max_sway", "1", FCVAR_ARCHIVE, "Amplitude of the detail prop sway" );
+ConVar cl_detail_avoid_radius( "cl_detail_avoid_radius", "10", FCVAR_ARCHIVE, "radius around detail sprite to avoid players" );
+ConVar cl_detail_avoid_force( "cl_detail_avoid_force", "0.4", FCVAR_ARCHIVE, "force with which to avoid players ( in units, percentage of the width of the detail sprite )" );
+ConVar cl_detail_avoid_recover_speed( "cl_detail_avoid_recover_speed", "2", FCVAR_ARCHIVE, "how fast to recover position after avoiding players" );
 #endif
 
 // Per detail instance information
@@ -487,7 +493,9 @@ private:
 	float m_flDefaultFadeStart;
 	float m_flDefaultFadeEnd;
 
-	float m_flDelta;//TE120
+#ifdef TE120
+	float m_flDelta; // TE120
+#endif // TE120
 
 	// pre calcs for the current render frame
 	float m_flCurMaxSqDist;
@@ -902,6 +910,7 @@ void CDetailModel::GetColorModulation( float *color )
 	color[2] = tmp[2] + val * TexLightToLinear( m_Color.b, m_Color.exponent );
 
 //TE120--
+#ifdef TE120
 	// Minimum light value of 0.12
 	if ( ( color[0] + color[1] + color[2] ) < 0.11f )
 	{
@@ -909,6 +918,7 @@ void CDetailModel::GetColorModulation( float *color )
 		color[1] = 0.04f;
 		color[2] = 0.04f;
 	}
+#endif // TE120
 //TE120--
 
 	// Add in the lightstyles
@@ -1411,7 +1421,9 @@ CDetailObjectSystem::CDetailObjectSystem() : m_DetailSpriteDict( 0, 32 ), m_Deta
 	m_pSortInfo = NULL;
 	m_pFastSortInfo = NULL;
 	m_pBuildoutBuffer = NULL;
-	m_flDelta = 0.0f;//TE120
+#ifdef TE120
+	m_flDelta = 0.0f; // TE120
+#endif // TE120
 }
 
 void CDetailObjectSystem::FreeSortBuffers( void )
@@ -1481,6 +1493,29 @@ void CDetailObjectSystem::LevelInitPreEntity()
 		}
 	}
 
+	/*
+	// Dumping this code as according to https://developer.valvesoftware.com/wiki/Detail_props/Aspect_ratio_fix
+	//
+	if ( m_DetailObjects.Count() || m_DetailSpriteDict.Count() )
+	{
+		// There are detail objects in the level, so precache the material
+		PrecacheMaterial( DETAIL_SPRITE_MATERIAL );
+		IMaterial *pMat = m_DetailSpriteMaterial;
+		// adjust for non-square textures (cropped)
+		float flRatio = (float)( pMat->GetMappingWidth() ) / pMat->GetMappingHeight();
+		if ( flRatio > 1.0 )
+		{
+			for( int i = 0; i<m_DetailSpriteDict.Count(); i++ )
+			{
+				m_DetailSpriteDict[i].m_TexUL.y *= flRatio;
+				m_DetailSpriteDict[i].m_TexLR.y *= flRatio;
+				m_DetailSpriteDictFlipped[i].m_TexUL.y *= flRatio;
+				m_DetailSpriteDictFlipped[i].m_TexLR.y *= flRatio;
+			}
+		}
+	}
+	//*/
+
 	int detailPropLightingLump;
 	if( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
 	{
@@ -1503,19 +1538,31 @@ void CDetailObjectSystem::LevelInitPreEntity()
 
 void CDetailObjectSystem::LevelInitPostEntity()
 {
+	/*
+	// Replacing code as according to same fix mentioned above
+	//
+	const char *pDetailSpriteMaterial = DETAIL_SPRITE_MATERIAL;
+	C_World *pWorld = GetClientWorldEntity();
+	if ( pWorld && pWorld->GetDetailSpriteMaterial() && *(pWorld->GetDetailSpriteMaterial()) )
+	{
+		pDetailSpriteMaterial = pWorld->GetDetailSpriteMaterial();
+	}
+	m_DetailSpriteMaterial.Init( pDetailSpriteMaterial, TEXTURE_GROUP_OTHER );
+	//*/
 	if ( m_DetailObjects.Count() || m_DetailSpriteDict.Count() )
 	{
 		const char *pDetailSpriteMaterial = DETAIL_SPRITE_MATERIAL;
 		C_World *pWorld = GetClientWorldEntity();
 		if ( pWorld && pWorld->GetDetailSpriteMaterial() && *( pWorld->GetDetailSpriteMaterial() ) )
+		{
 			pDetailSpriteMaterial = pWorld->GetDetailSpriteMaterial();
-
+		}
 		m_DetailSpriteMaterial.Init( pDetailSpriteMaterial, TEXTURE_GROUP_OTHER );
 		PrecacheMaterial( pDetailSpriteMaterial );
 		IMaterial *pMat = m_DetailSpriteMaterial;
 
 		// adjust for non-square textures (cropped)
-		float flRatio = pMat->GetMappingWidth() / pMat->GetMappingHeight();
+		float flRatio = static_cast<float>( pMat->GetMappingWidth() ) / pMat->GetMappingHeight();
 		if ( flRatio > 1.0 )
 		{
 			for( int i = 0; i < m_DetailSpriteDict.Count(); i++ )
@@ -1527,12 +1574,19 @@ void CDetailObjectSystem::LevelInitPostEntity()
 			}
 		}
 	}
+	//*/
+
 	if ( GetDetailController() )
 	{
 //TE120--
+#ifdef TE120
 		cl_detailfade.SetValue( GetDetailController()->m_flFadeStartDist );
 		cl_detaildist.SetValue( GetDetailController()->m_flFadeEndDist );
 		cl_detaildistdesired.SetValue( GetDetailController()->m_flFadeEndDist );
+#else
+		cl_detailfade.SetValue( MIN( m_flDefaultFadeStart, GetDetailController()->m_flFadeStartDist ) );
+		cl_detaildist.SetValue( MIN( m_flDefaultFadeEnd, GetDetailController()->m_flFadeEndDist ) );
+#endif // TE120
 //TE120--
 	}
 	else
@@ -1540,7 +1594,9 @@ void CDetailObjectSystem::LevelInitPostEntity()
 		// revert to default values if the map doesn't specify
 		cl_detailfade.SetValue( m_flDefaultFadeStart );
 		cl_detaildist.SetValue( m_flDefaultFadeEnd );
-		cl_detaildistdesired.SetValue( m_flDefaultFadeEnd );//TE120
+#ifdef TE120
+		cl_detaildistdesired.SetValue( m_flDefaultFadeEnd ); // TE120
+#endif // TE120
 	}
 }
 
@@ -2781,6 +2837,7 @@ void CDetailObjectSystem::BuildDetailObjectRenderLists( const Vector &vViewOrigi
  	ctx.m_BuildWorldListNumber = view->BuildWorldListsNumber();
 
 //TE120--
+#ifdef TE120
 	// We need to recompute translucency information for all detail props
 	m_flCurMaxSqDist = cl_detaildist.GetFloat();
 	if (cl_detaildistdesired.GetFloat() != m_flCurMaxSqDist )
@@ -2808,6 +2865,16 @@ void CDetailObjectSystem::BuildDetailObjectRenderLists( const Vector &vViewOrigi
 	{
 		m_flDelta = 0.0f;
 	}
+#else
+	// We need to recompute translucency information for all detail props
+	for (int i = m_DetailObjectDict.Size(); --i >= 0; )
+	{
+		if (modelinfo->ModelHasMaterialProxy( m_DetailObjectDict[i].m_pModel ))
+		{
+			modelinfo->RecomputeTranslucency( m_DetailObjectDict[i].m_pModel, 0, 0, NULL );
+		}
+	}
+#endif // TE120
 //TE120--
 
 	float factor = 1.0f;

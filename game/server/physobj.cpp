@@ -365,7 +365,9 @@ void CPhysicsSpring::NotifySystemEvent( CBaseEntity *pNotify, notify_system_even
 
 // SendTable stuff.
 IMPLEMENT_SERVERCLASS_ST(CPhysBox, DT_PhysBox)
+#ifdef TE120
 		SendPropFloat(SENDINFO(m_fDisappearDist), 0, SPROP_NOSCALE),//TE120
+#endif // TE120
 END_SEND_TABLE()
 
 LINK_ENTITY_TO_CLASS( func_physbox, CPhysBox );
@@ -381,7 +383,9 @@ BEGIN_DATADESC( CPhysBox )
 	DEFINE_KEYFIELD( m_flForceToEnableMotion, FIELD_FLOAT, "forcetoenablemotion" ),
 	DEFINE_KEYFIELD( m_angPreferredCarryAngles, FIELD_VECTOR, "preferredcarryangles" ),
 	DEFINE_KEYFIELD( m_bNotSolidToWorld, FIELD_BOOLEAN, "notsolid" ),
+#ifdef TE120
 	DEFINE_KEYFIELD( m_fDisappearDist, FIELD_FLOAT, "DisappearDist" ),//TE120
+#endif // TE120
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "Wake", InputWake ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "Sleep", InputSleep ),
@@ -389,7 +393,9 @@ BEGIN_DATADESC( CPhysBox )
 	DEFINE_INPUTFUNC( FIELD_VOID, "DisableMotion", InputDisableMotion ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "ForceDrop", InputForceDrop ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "DisableFloating", InputDisableFloating ),
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_VOID, "ConvertToDebris", InputConvertToDebris ),//TE120
+#endif // TE120
 
 	// Function pointers
 	DEFINE_ENTITYFUNC( BreakTouch ),
@@ -703,16 +709,18 @@ void CPhysBox::InputForceDrop( inputdata_t &inputdata )
 	}
 }
 
+//TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-//TE120--
 void CPhysBox::InputConvertToDebris( inputdata_t &inputdata )
 {
 	AddSpawnFlags( SF_PHYSPROP_DEBRIS );
-	// Hack to make object interact with other phys objects but not the player
+	// HACK: make object interact with other phys objects but not the player
 	SetCollisionGroup( HasSpawnFlags( SF_PHYSBOX_IGNOREUSE ) ? COLLISION_GROUP_PASSABLE_DOOR : COLLISION_GROUP_DEBRIS );
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------
@@ -1360,7 +1368,9 @@ static CBaseEntity *CreateSimplePhysicsObject( CBaseEntity *pEntity, bool create
 
 #define SF_CONVERT_ASLEEP		0x0001
 #define SF_CONVERT_AS_DEBRIS	0x0002
+#ifdef TE120
 #define SF_CONVERT_NO_PICKUP	0x0004//TE120
+#endif // TE120
 
 class CPhysConvert : public CLogicalEntity
 {
@@ -1404,7 +1414,9 @@ void CPhysConvert::InputConvertTarget( inputdata_t &inputdata )
 {
 	bool createAsleep = HasSpawnFlags(SF_CONVERT_ASLEEP);
 	bool createAsDebris = HasSpawnFlags(SF_CONVERT_AS_DEBRIS);
+#ifdef TE120
 	bool createNoPickup = HasSpawnFlags( SF_CONVERT_NO_PICKUP );//TE120
+#endif // TE120
 
 	// Fire output
 	m_OnConvert.FireOutput( inputdata.pActivator, this );
@@ -1454,8 +1466,10 @@ void CPhysConvert::InputConvertTarget( inputdata_t &inputdata )
 		if ( pPhys )
 		{
 //TE120--
+#ifdef TE120
 			if ( createNoPickup )
 				pPhys->AddSpawnFlags( SF_PHYSBOX_NEVER_PICK_UP );
+#endif // TE120
 //TE120--
 
 			// Override the mass if specified
@@ -1582,10 +1596,17 @@ CPhysMagnet::~CPhysMagnet( void )
 //-----------------------------------------------------------------------------
 void CPhysMagnet::Spawn( void )
 {
+	/* BM: Preventing a crash
+	Precache();
+
+	SetMoveType( MOVETYPE_NONE );
+	SetSolid( SOLID_VPHYSICS );
+	SetModel( STRING( GetModelName() ) );
+	//*/
 	SetMoveType( MOVETYPE_NONE );
 	SetSolid( SOLID_VPHYSICS );
 
-	char *szModel = ( char *) STRING( GetModelName() );
+	char *szModel = ( char * ) STRING( GetModelName() );
 	if (!szModel || !*szModel)
 	{
 		Warning( "%s at %.0f, %.0f, %0.f missing modelname!\n",
@@ -1599,6 +1620,7 @@ void CPhysMagnet::Spawn( void )
 
 	PrecacheModel( szModel );
 	SetModel( szModel );
+	//*/
 
 	m_takedamage = DAMAGE_EVENTS_ONLY;
 

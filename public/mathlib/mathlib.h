@@ -24,6 +24,10 @@
 // XXX remove me
 #undef clamp
 
+#if __cplusplus > 199711L
+#define register      // Deprecated in C++11.
+#endif  // #if __cplusplus > 199711L
+
 // Uncomment this to enable FP exceptions in parts of the code.
 // This can help track down FP bugs. However the code is not
 // FP exception clean so this not a turnkey operation.
@@ -1003,7 +1007,7 @@ void BuildGammaTable( float gamma, float texGamma, float brightness, int overbri
 // convert texture to linear 0..1 value
 inline float TexLightToLinear( int c, int exponent )
 {
-	extern float power2_n[256];
+	extern ALIGN128 float power2_n[256];
 	Assert( exponent >= -128 && exponent <= 127 );
 	return ( float )c * power2_n[exponent+128];
 }
@@ -1216,8 +1220,10 @@ FORCEINLINE int RoundFloatToInt(float f)
 	};
 	flResult = __fctiw( f );
 	return pResult[1];
+#elif defined(POSIX)
+	static_cast<int>(f);
 #else
-	return (int) f;
+	#error Unknown architecture
 #endif
 }
 
@@ -2168,7 +2174,7 @@ inline bool CloseEnough( const Vector &a, const Vector &b, float epsilon = EQUAL
 // Fast compare
 // maxUlps is the maximum error in terms of Units in the Last Place. This
 // specifies how big an error we are willing to accept in terms of the value
-// of the least significant digit of the floating point numberï¿½s
+// of the least significant digit of the floating point number’s 
 // representation. maxUlps can also be interpreted in terms of how many
 // representable floats we are willing to accept between A and B.
 // This function will allow maxUlps-1 floats between A and B.

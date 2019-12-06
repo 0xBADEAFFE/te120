@@ -152,7 +152,9 @@ static ConVar r_debugcheapwater( "r_debugcheapwater", "0", FCVAR_CHEAT );
 static ConVar r_waterforceexpensive( "r_waterforceexpensive", "0", FCVAR_ARCHIVE );
 #endif
 static ConVar r_waterforcereflectentities( "r_waterforcereflectentities", "0" );
-static ConVar r_waterforcenoentities( "r_waterforcenoentities", "0" );//TE120
+#ifdef TE120
+static ConVar r_waterforcenoentities( "r_waterforcenoentities", "0" ); // TE120
+#endif // TE120
 static ConVar r_WaterDrawRefraction( "r_WaterDrawRefraction", "1", 0, "Enable water refraction" );
 static ConVar r_WaterDrawReflection( "r_WaterDrawReflection", "1", 0, "Enable water reflection" );
 static ConVar r_ForceWaterLeaf( "r_ForceWaterLeaf", "1", 0, "Enable for optimization to water - considers view in leaf under water for purposes of culling" );
@@ -799,9 +801,11 @@ CLIENTEFFECT_REGISTER_BEGIN( PrecachePostProcessingEffects )
 	CLIENTEFFECT_MATERIAL( "dev/motion_blur" )
 	CLIENTEFFECT_MATERIAL( "dev/upscale" )
 //TE120--
+#ifdef TE120
 	// TE120 Postprocess Effects
 	CLIENTEFFECT_MATERIAL( "drunk" )
 	CLIENTEFFECT_MATERIAL( "combinedlens" )
+#endif // TE120
 //TE120--
 #ifdef TF_CLIENT_DLL
 	CLIENTEFFECT_MATERIAL( "dev/pyro_blur_filter_y" )
@@ -2456,7 +2460,11 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 	}
 	if ( !bForceCheap && pForceExpensiveVar && pForceExpensiveVar->IsDefined() )
 	{
-		bForceExpensive = false;//TE120
+#ifdef TE120
+		bForceExpensive = false; // TE120
+#else
+		bForceExpensive = bForceExpensive || ( pForceExpensiveVar->GetIntValueFast() != 0 );
+#endif // TE120
 	}
 
 	bool bDebugCheapWater = r_debugcheapwater.GetBool();
@@ -2472,7 +2480,11 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 #ifdef _X360
 	if( !r_WaterDrawReflection.GetBool() )
 #else
-	if( !r_WaterDrawReflection.GetBool() )//TE120
+#ifdef TE120
+	if( !r_WaterDrawReflection.GetBool() ) // TE120
+#else
+	if( !bForceExpensive || !r_WaterDrawReflection.GetBool() )
+#endif // TE120
 #endif
 	{
 		bLocalReflection = false;
@@ -2500,7 +2512,11 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 		return;
 	}
 #else
-	if ( (fogVolumeInfo.m_flDistanceToWater >= m_flCheapWaterEndDistance) || bForceCheap )//TE120
+#ifdef TE120
+	if ( (fogVolumeInfo.m_flDistanceToWater >= m_flCheapWaterEndDistance) || bForceCheap ) // TE120
+#else
+	if ( ( (fogVolumeInfo.m_flDistanceToWater >= m_flCheapWaterEndDistance) && !bLocalReflection ) || bForceCheap )
+#endif // TE120
  		return;
 #endif
 	// Get the material that is for the water surface that is visible and check to see
@@ -2534,8 +2550,10 @@ void CViewRender::DetermineWaterRenderInfo( const VisibleFogVolumeInfo_t &fogVol
 			info.m_bReflectEntities = pReflectEntitiesVar && (pReflectEntitiesVar->GetIntValueFast() != 0);
 		}
 //TE120--
+#ifdef TE120
 		if ( info.m_bReflectEntities && r_waterforcenoentities.GetBool() )
 			info.m_bReflectEntities = false;
+#endif // TE120
 //TE120--
 	}
 
@@ -4057,8 +4075,8 @@ void CRendering3dView::DrawOpaqueRenderables( ERenderDepthMode DepthMode )
 		}
 	}
 
-	//if ( 0 && r_threaded_renderables.GetBool() )
-	if ( r_threaded_renderables.GetBool() )
+	if ( 0 && r_threaded_renderables.GetBool() )
+	// if ( r_threaded_renderables.GetBool() )
 	{
 		ParallelProcess( "BoneSetupNpcsLast", arrBoneSetupNpcsLast.Base() + numOpaqueEnts - numNpcs, numNpcs, &SetupBonesOnBaseAnimating );
 		ParallelProcess( "BoneSetupNpcsLast NonNPCs", arrBoneSetupNpcsLast.Base(), numNonNpcsAnimating, &SetupBonesOnBaseAnimating );
@@ -4818,7 +4836,11 @@ void CSkyboxView::DrawInternal( view_id_t iSkyBoxViewID, bool bInvokePreAndPostR
 
 	m_pMainView->DisableFog();
 
-	CGlowOverlay::UpdateSkyOverlays( zFar * 0.25, m_bCacheFullSceneState );//TE120
+#ifdef TE120
+	CGlowOverlay::UpdateSkyOverlays( zFar * 0.25, m_bCacheFullSceneState ); // TE120
+#else
+	CGlowOverlay::UpdateSkyOverlays( zFar, m_bCacheFullSceneState );
+#endif // TE120
 
 	PixelVisibility_EndCurrentView();
 

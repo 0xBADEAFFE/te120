@@ -33,6 +33,8 @@
 #define SF_PHYSPROP_NO_COLLISIONS				0x200000		// Don't enable collisions on spawn
 #define SF_PHYSPROP_IS_GIB						0x400000		// Limit # of active gibs
 
+#define SF_PHYSPROP_PUSHAWAY					0x800000
+
 // Any barrel farther away than this is ignited rather than exploded.
 #define PROP_EXPLOSION_IGNITE_RADIUS			32.0f
 

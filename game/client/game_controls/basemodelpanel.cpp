@@ -106,8 +106,8 @@ void CModelPanel::ParseModelInfo( KeyValues *inResourceData )
 
 	m_pModelInfo = new CModelPanelModelInfo;
 
-	if ( !m_pModelInfo )
-		return;
+	//if ( !m_pModelInfo )
+	//	return;
 
 	m_pModelInfo->m_pszModelName = ReadAndAllocStringValue( inResourceData, "modelname" );
 	m_pModelInfo->m_pszModelName_HWM = ReadAndAllocStringValue( inResourceData, "modelname_hwm" );
@@ -129,13 +129,13 @@ void CModelPanel::ParseModelInfo( KeyValues *inResourceData )
 		{
 			CModelPanelAttachedModelInfo *pAttachedModelInfo = new CModelPanelAttachedModelInfo;
 
-			if ( pAttachedModelInfo )
-			{
+			//if ( pAttachedModelInfo )
+			//{
 				pAttachedModelInfo->m_pszModelName = ReadAndAllocStringValue( pData, "modelname" );
 				pAttachedModelInfo->m_nSkin = pData->GetInt( "skin", -1 );
 
 				m_pModelInfo->m_AttachedModelsInfo.AddToTail( pAttachedModelInfo );
-			}
+			//}
 		}
 	}
 
@@ -152,8 +152,8 @@ void CModelPanel::OnAddAnimation( KeyValues *pData )
 
 	CModelPanelModelAnimation *pAnimation = new CModelPanelModelAnimation;
 
-	if ( pAnimation )
-	{
+	//if ( pAnimation )
+	//{
 		pAnimation->m_pszName = ReadAndAllocStringValue( pData, "name" );
 		pAnimation->m_pszSequence = ReadAndAllocStringValue( pData, "sequence" );
 		pAnimation->m_pszActivity = ReadAndAllocStringValue( pData, "activity" );
@@ -172,7 +172,7 @@ void CModelPanel::OnAddAnimation( KeyValues *pData )
 		{
 			m_iDefaultAnimation = m_pModelInfo->m_Animations.Find( pAnimation );
 		}
-	}
+	//}
 }
 
 //-----------------------------------------------------------------------------
@@ -231,8 +231,8 @@ void CModelPanel::SwapModel( const char *pszName, const char *pszAttached )
 	if ( pszAttached )
 	{
 		CModelPanelAttachedModelInfo *pAttachedModelInfo = new CModelPanelAttachedModelInfo;
-		if ( pAttachedModelInfo )
-		{
+		//if ( pAttachedModelInfo )
+		//{
 			len = Q_strlen( pszAttached ) + 1;
 			pAlloced = new char[ len ];
 			Assert( pAlloced );
@@ -241,7 +241,7 @@ void CModelPanel::SwapModel( const char *pszName, const char *pszAttached )
 			pAttachedModelInfo->m_nSkin = 0;
 
 			m_pModelInfo->m_AttachedModelsInfo.AddToTail( pAttachedModelInfo );
-		}
+		//}
 	}
 
 	m_bPanelDirty = true;
@@ -273,8 +273,8 @@ void CModelPanel::SetupVCD( void )
 
 	C_SceneEntity *pEnt = new class C_SceneEntity;
 
-	if ( !pEnt )
-		return;
+	//if ( !pEnt )
+	//	return;
 
 	if ( pEnt->InitializeAsClientEntity( "", RENDER_GROUP_OTHER ) == false )
 	{
@@ -369,8 +369,8 @@ void CModelPanel::SetupModel( void )
 	// create the new model
 	CModelPanelModel *pEnt = new CModelPanelModel;
 
-	if ( !pEnt )
-		return;
+	//if ( !pEnt )
+	//	return;
 
 	if ( pEnt->InitializeAsClientEntity( pszModelName, RENDER_GROUP_OPAQUE_ENTITY ) == false )
 	{
@@ -430,8 +430,8 @@ void CModelPanel::SetupModel( void )
 		CModelPanelAttachedModelInfo *pInfo = m_pModelInfo->m_AttachedModelsInfo[i];
 		C_BaseAnimating *pTemp = new C_BaseAnimating;
 
-		if ( pTemp )
-		{
+		//if ( pTemp )
+		//{
 			if ( pTemp->InitializeAsClientEntity( pInfo->m_pszModelName, RENDER_GROUP_OPAQUE_ENTITY ) == false )
 			{	
 				// we failed to initialize this model so just skip it
@@ -450,7 +450,7 @@ void CModelPanel::SetupModel( void )
 
 			pTemp->m_flAnimTime = gpGlobals->curtime;
 			m_AttachedModels.AddToTail( pTemp );
-		}
+		//}
 	}
 
 	CalculateFrameDistance();

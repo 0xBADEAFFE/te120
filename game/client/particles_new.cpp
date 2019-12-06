@@ -88,11 +88,16 @@ CNewParticleEffect::~CNewParticleEffect(void)
 		static ParticleSystemDestroyedState_t state;
 		state.m_nParticleSystemId = gpGlobals->curtime;
 		state.m_flTime = gpGlobals->curtime;
-
-		KeyValues *msg = new KeyValues( "ParticleSystem_Destroy" );
-		msg->SetPtr( "state", &state );
-
-		ToolFramework_PostToolMessage( HTOOLHANDLE_INVALID, msg );
+		try
+		{
+			KeyValues *msg = new KeyValues( "ParticleSystem_Destroy" );
+			msg->SetPtr( "state", &state );
+			ToolFramework_PostToolMessage( HTOOLHANDLE_INVALID, msg );
+		}
+		catch (...)
+		{
+			Assert(0);
+		}
 		m_nToolParticleEffectId = TOOLPARTICLESYSTEMID_INVALID; 
 	}
 

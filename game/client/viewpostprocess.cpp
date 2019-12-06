@@ -18,10 +18,13 @@
 #include "bitmap/tgawriter.h"
 #include "filesystem.h"
 #include "tier0/vprof.h"
+
 #include "proxyentity.h"
 //TE120--
+#ifdef TE120
 #include "c_te_effect_dispatch.h"
 #include "shadereditor/ivshadereditor.h"
+#endif // TE120
 //TE120--
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -841,7 +844,7 @@ void CLuminanceHistogramSystem::UpdateLuminanceRanges( void )
 
 		// This seems like a bad idea but it's fine for now
 		const char *sModsForOriginalAlgorithm[] = { "dod", "cstrike", "lostcoast", "hl1" };
-		for ( int i=0; i<3; i++ )
+		for ( int i=0; i<4; i++ )
 		{
 			if ( strlen( engine->GetGameDirectory() ) >= strlen( sModsForOriginalAlgorithm[i] ) )
 			{
@@ -2220,6 +2223,7 @@ static ConVar mat_postprocess_x( "mat_postprocess_x", "4" );
 static ConVar mat_postprocess_y( "mat_postprocess_y", "1" );
 
 //TE120--
+#ifdef TE120
 // Convars for controlling TE120 post processing
 static ConVar te120_combinedlensflare("te120_combinedlensflare", "1", FCVAR_ARCHIVE, "Toggles TE120 post-processing effects" );
 
@@ -2231,6 +2235,7 @@ float g_DesiredDirtyValue = -1.0f;
 float g_ActualDirtyValue = 1.0f;
 bool  g_ReturnToDefault = false;
 float g_NextDirtyUpdateTime = 0.0f;
+#endif // TE120
 //TE120--
 
 void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, bool bPostVGui )
@@ -2652,6 +2657,7 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 	pRenderContext->PopVertexShaderGPRAllocation();
 #endif
 //TE120--
+#ifdef TE120
 	// Here happens the SSE specific stuff
 	if ( shaderEdit )
 	{
@@ -2780,10 +2786,11 @@ void DoEnginePostProcessing( int x, int y, int w, int h, bool bFlashlightIsOn, b
 			}
 		}
 	}
+#endif // TE120
 //TE120--
 }
-
 //TE120--
+#ifdef TE120
 void GravityBallFadeConcCallback( const CEffectData &data )
 {
 	g_DesiredDrunkValue = data.m_flScale;
@@ -2805,6 +2812,7 @@ void DisableDirtyLensFade( const CEffectData &data )
 	g_NextDirtyUpdateTime = gpGlobals->curtime + 0.05f;
 }
 DECLARE_CLIENT_EFFECT( "CE_DisableDirtyLensFade", DisableDirtyLensFade );
+#endif // TE120
 //TE120--
 
 // Motion Blur Material Proxy =========================================================================================

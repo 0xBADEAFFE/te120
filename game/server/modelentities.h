@@ -28,7 +28,11 @@ public:
 	virtual void Spawn( void );
 	bool CreateVPhysics( void );
 
+#ifdef TE120
 	virtual int	ObjectCaps( void ) { return HasSpawnFlags(SF_IGNORE_PLAYERUSE) ? BaseClass::ObjectCaps() & ~FCAP_ACROSS_TRANSITION : (BaseClass::ObjectCaps() | FCAP_IMPULSE_USE) & ~FCAP_ACROSS_TRANSITION; }//TE120
+#else
+	virtual int	ObjectCaps( void ) { return HasSpawnFlags(SF_IGNORE_PLAYERUSE) ? BaseClass::ObjectCaps() : BaseClass::ObjectCaps() | FCAP_IMPULSE_USE; }
+#endif // TE120
 
 	virtual int DrawDebugTextOverlays( void );
 
@@ -60,6 +64,7 @@ public:
 };
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Used for glowing qr codes
 //-----------------------------------------------------------------------------
@@ -102,6 +107,7 @@ private:
 	float			m_flAbsorbRate;
 	float			m_flEmitRate;
 };
+#endif // TE120
 //TE120--
 
 #endif // MODELENTITIES_H

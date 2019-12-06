@@ -57,12 +57,16 @@ private:
 
 	string_t	m_iszSubject;
 	//TE120--
+#ifdef TE120
 	string_t	m_iszSubject2;
 	string_t	m_iszSubject3;
+#endif // TE120
 	//TE120--
 	int			m_iDisposition;
 	int			m_iRank;
+#ifdef TE120
 	int			m_iMaxHandle;//TE120
+#endif // TE120
 	bool		m_fStartActive;
 	bool		m_bIsActive;
 	int			m_iPreviousDisposition;
@@ -86,12 +90,16 @@ BEGIN_DATADESC( CAI_Relationship )
 
 	DEFINE_KEYFIELD( m_iszSubject, FIELD_STRING, "subject" ),
 	//TE120--
+#ifdef TE120
 	DEFINE_KEYFIELD( m_iszSubject2, FIELD_STRING, "subject2" ),
 	DEFINE_KEYFIELD( m_iszSubject3, FIELD_STRING, "subject3" ),
+#endif // TE120
 	//TE120--
 	DEFINE_KEYFIELD( m_iDisposition, FIELD_INTEGER, "disposition" ),
 	DEFINE_KEYFIELD( m_iRank, FIELD_INTEGER, "rank" ),
+#ifdef TE120
 	DEFINE_KEYFIELD( m_iMaxHandle, FIELD_INTEGER, "maxsubjects" ),//TE120
+#endif // TE120
 	DEFINE_KEYFIELD( m_fStartActive, FIELD_BOOLEAN, "StartActive" ),
 	DEFINE_FIELD( m_bIsActive, FIELD_BOOLEAN ),
 	DEFINE_KEYFIELD( m_flRadius, FIELD_FLOAT, "radius" ),
@@ -124,8 +132,10 @@ void CAI_Relationship::Spawn()
 		UTIL_Remove(this);
 	}
 //TE120--
+#ifdef TE120
 	if ( m_iMaxHandle < 0 || m_iMaxHandle > 512 )
 		m_iMaxHandle = 512;
+#endif // TE120
 //TE120--
 }
 
@@ -270,20 +280,22 @@ bool CAI_Relationship::IsASubject( CBaseEntity *pEntity )
 	if( pEntity->NameMatches( m_iszSubject ) )
 		return true;
 //TE120--
+#ifdef TE120
 	if( (m_iszSubject2 != NULL_STRING) && pEntity->NameMatches( m_iszSubject2 ) )
 		return true;
 
 	if( (m_iszSubject3 != NULL_STRING) && pEntity->NameMatches( m_iszSubject3 ) )
 		return true;
-
+#endif // TE120
 	if( pEntity->ClassMatches( m_iszSubject ) )
 		return true;
-
+#ifdef TE120
 	if( (m_iszSubject2 != NULL_STRING) && pEntity->ClassMatches( m_iszSubject2 ) )
 		return true;
 
 	if( (m_iszSubject3 != NULL_STRING) && pEntity->ClassMatches( m_iszSubject3 ) )
 		return true;
+#endif // TE120
 //TE120--
 	return false;
 }
@@ -398,7 +410,11 @@ void CAI_Relationship::ChangeRelationships( int disposition, int iReverting, CBa
 	// Search players first
 	for ( int i = 1; i <= gpGlobals->maxClients; i++ )
 	{
+#ifdef TE120
 		if ( subjectList.Count() == m_iMaxHandle || targetList.Count() == m_iMaxHandle )//TE120
+#else
+		if ( subjectList.Count() == MAX_HANDLED || targetList.Count() == MAX_HANDLED )
+#endif // TE120		
 		{
 			DevMsg( "Too many entities handled by ai_relationship %s\n", GetDebugName() );
 			break;
@@ -422,7 +438,11 @@ void CAI_Relationship::ChangeRelationships( int disposition, int iReverting, CBa
 	// Search NPCs
 	for ( int i = 0; i < g_AI_Manager.NumAIs(); i++ )
 	{
+#ifdef TE120
 		if ( subjectList.Count() == m_iMaxHandle || targetList.Count() == m_iMaxHandle )//TE120
+#else
+		if ( subjectList.Count() == MAX_HANDLED || targetList.Count() == MAX_HANDLED )
+#endif // TE120
 		{
 			DevMsg( "Too many entities handled by ai_relationship %s\n", GetDebugName() );
 			break;

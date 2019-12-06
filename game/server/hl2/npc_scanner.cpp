@@ -205,17 +205,18 @@ CNPC_CScanner::CNPC_CScanner()
 	m_bNeverInspectPlayers = false;
 
 	char szMapName[256];
-	Q_strncpy(szMapName, STRING(gpGlobals->mapname), sizeof(szMapName) );
+	Q_strncpy(szMapName, STRING(gpGlobals->mapname), sizeof(szMapName));
 	Q_strlower(szMapName);
 
-	if( !Q_strnicmp( szMapName, "d3_c17", 6 ) )
+	if (!Q_strnicmp(szMapName, "d3_c17", 6))
 	{
-		// Streetwar scanners are claw scanners
+		if (!m_bIsClawScanner)
+			// Streetwar scanners are claw scanners. TODO: correct the maps and phase this out.
+			Warning("Automatically converted a streetwar scanner to a claw scanner! (%.0f, %.0f, %0.f)\n",
+				GetAbsOrigin().x,
+				GetAbsOrigin().y,
+				GetAbsOrigin().z);
 		m_bIsClawScanner = true;
-	}
-	else
-	{
-		m_bIsClawScanner = false;
 	}
 }
 
@@ -1938,7 +1939,7 @@ void CNPC_CScanner::AttackFlash(void)
 	m_pEyeFlash->SetBrightness( 255 );
 	m_pEyeFlash->SetColor(255,255,255);
 
-	if (GetEnemy() != NULL)
+	if (GetEnemy() != NULL && !m_bNoLight )
 	{
 		Vector pos = GetEnemyLKP();
 		CBroadcastRecipientFilter filter;
@@ -1975,6 +1976,9 @@ void CNPC_CScanner::BlindFlashTarget( CBaseEntity *pTarget )
 			}
 		}
 	}
+
+	if (m_bNoLight)
+		return;
 
 	// Only bother with player
 	if ( pTarget->IsPlayer() == false )

@@ -384,7 +384,9 @@ public:
 	virtual CHudTexture const	*GetSpriteAutoaim( void ) const;
 	virtual CHudTexture const	*GetSpriteZoomedCrosshair( void ) const;
 	virtual CHudTexture const	*GetSpriteZoomedAutoaim( void ) const;
+#ifdef TE120
 	virtual CHudTexture const	*GetSpriteCrosshairUse( void ) const;//TE120
+#endif // TE120
 
 	virtual Activity		ActivityOverride( Activity baseAct, bool *pRequired );
 	virtual	acttable_t*		ActivityList( void ) { return NULL; }
@@ -512,6 +514,8 @@ public:
 	virtual int				DrawOverriddenViewmodel( C_BaseViewModel *pViewmodel, int flags ) { return 0; };
 	bool					WantsToOverrideViewmodelAttachments( void ) { return false; }
 #endif
+
+	virtual void DoAnimationEvents(CStudioHdr* pStudio);
 
 #endif // End client-only methods
 

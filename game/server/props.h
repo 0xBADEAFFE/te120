@@ -83,7 +83,11 @@ public:
 
 	virtual bool   HasPreferredCarryAnglesForPlayer( CBasePlayer *pPlayer )
 	{
+#ifdef TE120
 		if ( HasInteraction( PROPINTER_PHYSGUN_LAUNCH_SPIN_Z ) || m_explodeDamage == 1 )//TE120
+#else
+		if ( HasInteraction( PROPINTER_PHYSGUN_LAUNCH_SPIN_Z ) )
+#endif // TE120
 			return true;
 
 		return false;
@@ -294,7 +298,9 @@ public:
 	void InputDisableCollision( inputdata_t &inputdata );
 	void InputEnableCollision( inputdata_t &inputdata );
 	void InputSetPlaybackRate( inputdata_t &inputdata );
+#ifdef TE120
 	void InputSetCraneArmPosition( inputdata_t &inputdata );//TE120
+#endif // TE120
 
 	COutputEvent		m_pOutputAnimBegun;
 	COutputEvent		m_pOutputAnimOver;
@@ -353,8 +359,10 @@ public:
 	void InputDisableMotion( inputdata_t &inputdata );
 	void InputDisableFloating( inputdata_t &inputdata );
 //TE120--
+#ifdef TE120
 	void InputConvertToDebris( inputdata_t &inputdata );
 	void InputToggleGlow( inputdata_t &inputdata );
+#endif // TE120
 //TE120--
 
 	void EnableMotion( void );
@@ -390,7 +398,9 @@ private:
 
 	COutputEvent m_MotionEnabled;
 	COutputEvent m_OnAwakened;
+#ifdef TE120
 	COutputEvent m_OnSleep;//TE120
+#endif // TE120
 	COutputEvent m_OnPhysGunPickup;
 	COutputEvent m_OnPhysGunPunt;
 	COutputEvent m_OnPhysGunOnlyPickup;
@@ -398,7 +408,9 @@ private:
 	COutputEvent m_OnPlayerUse;
 	COutputEvent m_OnPlayerPickup;
 	COutputEvent m_OnOutOfWorld;
+#ifdef TE120
 	COutputEvent m_OnPlayerThrow;//TE120
+#endif // TE120
 
 	float		m_massScale;
 	float		m_inertiaScale;
@@ -412,7 +424,9 @@ private:
 
 protected:
 	CNetworkVar( bool, m_bAwake );
+#ifdef TE120
 	CNetworkVar( bool, m_bEnableGlow );//TE120
+#endif // TE120
 };
 
 

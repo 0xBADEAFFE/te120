@@ -499,6 +499,7 @@ CHudTexture const *CBaseCombatWeapon::GetSpriteCrosshair( void ) const
 	return GetWpnData().iconCrosshair;
 }
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -506,6 +507,7 @@ CHudTexture const *CBaseCombatWeapon::GetSpriteCrosshairUse( void ) const
 {
 	return GetWpnData().iconCrosshairUse;
 }
+#endif // TE120
 //TE120--
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -1067,11 +1069,13 @@ int CBaseCombatWeapon::UpdateClientData( CBasePlayer *pPlayer )
 		else
 		{
 //TE120--
+#ifdef TE120
 			if ( pPlayer->m_fOnUsable )
 				iNewState = WEAPON_ON_USABLE;
 			else
-				iNewState = WEAPON_IS_ACTIVE;
+#endif // TE120
 //TE120--
+				iNewState = WEAPON_IS_ACTIVE;
 		}
 	}
 	else
@@ -1480,6 +1484,7 @@ bool CBaseCombatWeapon::Holster( CBaseCombatWeapon *pSwitchingTo )
 	float flSequenceDuration = 0;
 	if ( GetActivity() == ACT_VM_HOLSTER )
 	{
+		// MDLCACHE_CRITICAL_SECTION();
 		flSequenceDuration = SequenceDuration();
 	}
 
@@ -1737,7 +1742,11 @@ void CBaseCombatWeapon::ItemPostFrame( void )
 		{
 			// This weapon doesn't fire underwater
 			WeaponSound(EMPTY);
+#ifdef TE120
 			m_flNextPrimaryAttack = m_flNextEmptySoundTime = gpGlobals->curtime + 0.2;//TE120
+#else
+			m_flNextPrimaryAttack = gpGlobals->curtime + 0.2;
+#endif // TE120			
 			return;
 		}
 		else

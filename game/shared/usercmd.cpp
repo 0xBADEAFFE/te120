@@ -293,12 +293,12 @@ void ReadUsercmd( bf_read *buf, CUserCmd *move, CUserCmd *from )
 	if ( buf->ReadOneBit() )
 	{
 		int count = buf->ReadShort();
-  	if ((count < 0) || (count > 140))
+  		if ((count < 0) || (count > 140))
 		{
-      Msg("Ignoring strange entitygroundcontact count: %d\n", count);
-      return; // why can this be less than 0, Valve? change to ReadWord()???
-    }
-    move->entitygroundcontact.SetCount( count );
+      		Msg("Ignoring strange entitygroundcontact count: %d\n", count);
+      		return; // why can this be less than 0, Valve? change to ReadWord()???
+    	}
+    	move->entitygroundcontact.SetCount( count );
 
 		int i;
 		for (i = 0; i < move->entitygroundcontact.Count(); i++)

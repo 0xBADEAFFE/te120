@@ -27,12 +27,14 @@ public:
 					C_PhysBox();
 	virtual			~C_PhysBox();
 	virtual ShadowType_t ShadowCastType();
-	
-	unsigned char	GetClientSideFade();//TE120
-
+#ifdef TE120	
+	unsigned char	GetClientSideFade(); // TE120
+#endif // TE120
 public:
 	float			m_mass;	// TEST..
-	float			m_fDisappearDist;//TE120
+#ifdef TE120
+	float			m_fDisappearDist; // TE120
+#endif // TE120
 };
 
 

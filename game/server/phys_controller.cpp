@@ -310,7 +310,9 @@ void CPhysForce::ScaleForce( float scale )
 		ForceOn();
 
 	m_integrator.ScaleConstantForce( scale );
-	m_pController->WakeObjects();
+	
+	if (m_pController)
+		m_pController->WakeObjects();
 }
 
 
@@ -961,20 +963,6 @@ void CKeepUpright::Activate()
 			UTIL_Remove(this);
 			return;
 		}
-		// HACKHACK: Due to changes in the vehicle simulator the keepupright controller used in coast_01 is unstable
-		// force it to have perfect damping to compensate.
-		// detect it using the hack of angular limit == 150, attached to a vehicle
-		// Fixing it in the code is the simplest course of action presently
-#ifdef HL2_DLL
-		if ( m_angularLimit == 150.0f )
-		{
-			CBaseEntity *pEntity = static_cast<CBaseEntity *>(pPhys->GetGameData());
-			if ( pEntity && pEntity->GetServerVehicle() && Q_stristr( gpGlobals->mapname.ToCStr(), "d2_coast_01" ) )
-			{
-				m_bDampAllRotation = true;
-			}
-		}
-#endif
 
 		m_pController = physenv->CreateMotionController( (IMotionEvent *)this );
 		m_pController->AttachObject( pPhys, false );

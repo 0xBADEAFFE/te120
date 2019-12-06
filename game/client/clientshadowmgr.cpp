@@ -93,7 +93,7 @@ static ConVar r_shadowrendertotexture( "r_shadowrendertotexture", "0" );
 static ConVar r_flashlight_version2( "r_flashlight_version2", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 
 void WorldLightCastShadowCallback(IConVar *pVar, const char *pszOldValue, float flOldValue);
-// Disabling by default, too costly in chapter 2, 3, & 4.
+// Disabling dynamic RTT shadow angles by default, too costly in chapter 2, 3, & 4.
 static ConVar r_worldlight_castshadows( "r_worldlight_castshadows", "0", FCVAR_CHEAT, "Allow world lights to cast shadows", true, 0, true, 1, WorldLightCastShadowCallback );
 static ConVar r_worldlight_lerptime( "r_worldlight_lerptime", "0.5", FCVAR_CHEAT );
 static ConVar r_worldlight_debug( "r_worldlight_debug", "0", FCVAR_CHEAT );
@@ -1195,8 +1195,6 @@ CClientShadowMgr::CClientShadowMgr() :
 {
 	m_nDepthTextureResolution = r_flashlightdepthres.GetInt();
 	m_bThreaded = false;
-
-
 	m_bShadowFromWorldLights = r_worldlight_castshadows.GetBool();
 }
 
@@ -1364,7 +1362,7 @@ void CClientShadowMgr::InitDepthTextureShadows()
 	extern ConVar developer;
 	// Start benchmark timer
 	CFastTimer timer;
-  if ( developer.GetInt() )
+	if ( developer.GetInt() )
 	{
 		timer.Start();
 	}
@@ -1864,6 +1862,9 @@ ClientShadowHandle_t CClientShadowMgr::CreateProjectedTexture( ClientEntityHandl
 	if( !( flags & SHADOW_FLAGS_FLASHLIGHT ) )
 	{
 		IClientRenderable *pRenderable = ClientEntityList().GetClientRenderableFromHandle( entity );
+		if ( !pRenderable )
+			return m_Shadows.InvalidIndex();
+
 		int modelType = modelinfo->GetModelType( pRenderable->GetModel() );
 		if (modelType == mod_brush)
 		{
@@ -3503,17 +3504,27 @@ bool CClientShadowMgr::CullReceiver( ClientShadowHandle_t handle, IClientRendera
 void CClientShadowMgr::AddShadowToReceiver( ClientShadowHandle_t handle,
 	IClientRenderable* pRenderable, ShadowReceiver_t type )
 {
+	if (!pRenderable)
+		return;
+	
 	ClientShadow_t &shadow = m_Shadows[handle];
 
 	// Don't add a shadow cast by an object to itself...
 	IClientRenderable* pSourceRenderable = ClientEntityList().GetClientRenderableFromHandle( shadow.m_Entity );
 
 	// NOTE: if pSourceRenderable == NULL, the source is probably a flashlight since there is no entity.
-	if (pSourceRenderable == pRenderable)
+	if ( pSourceRenderable == pRenderable )
 		return;
 
+	int flags = SHADOW_FLAGS_PROJECTED_TEXTURE_TYPE_MASK;
+	extern ClientShadowHandle_t g_hFlashlightHandle;
+	if ( g_hFlashlightHandle == handle )
+	{
+		flags |= SHADOW_FLAGS_PLAYER_FLASHLIGHT;
+	}
+
 	// Don't bother if this renderable doesn't receive shadows or light from flashlights
-	if( !pRenderable->ShouldReceiveProjectedTextures( SHADOW_FLAGS_PROJECTED_TEXTURE_TYPE_MASK ) )
+	if ( !pRenderable->ShouldReceiveProjectedTextures( flags ) )
 		return;
 
 	// Cull if the origin is on the wrong side of a shadow clip plane....
@@ -4054,8 +4065,7 @@ void CClientShadowMgr::ComputeShadowTextures( const CViewSetup &view, int leafCo
 	if ( !m_RenderToTextureActive || (r_shadows.GetInt() == 0) || r_shadows_gamecontrol.GetInt() == 0 )
 		return;
 
-	//m_bThreaded = false;//( r_threaded_client_shadow_manager.GetBool() && g_pThreadPool->NumIdleThreads() );
-	m_bThreaded = ( r_threaded_client_shadow_manager.GetBool() && g_pThreadPool->NumIdleThreads() );
+	m_bThreaded = false;// (r_threaded_client_shadow_manager.GetBool() && g_pThreadPool->NumIdleThreads()); // false;
 
 	MDLCACHE_CRITICAL_SECTION();
 	// First grab all shadow textures we may want to render

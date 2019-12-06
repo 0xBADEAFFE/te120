@@ -1085,13 +1085,13 @@ void CAI_ScriptedSequence::PostIdleDone( CAI_BaseNPC *pNPC )
 //-----------------------------------------------------------------------------
 void CAI_ScriptedSequence::FixScriptNPCSchedule( CAI_BaseNPC *pNPC, int iSavedCineFlags )
 {
+	if (pNPC == NULL)
+		return;
+
 	if ( pNPC->GetIdealState() != NPC_STATE_DEAD )
 	{
 		pNPC->SetIdealState( NPC_STATE_IDLE );
 	}
-
-	if ( pNPC == NULL )
-		 return;
 
 	FixFlyFlag( pNPC, iSavedCineFlags );
 

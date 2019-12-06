@@ -1464,6 +1464,8 @@ void SlerpBones(
 			else
 			{
 #ifndef _X360
+				if (!q1[i].IsValid() || !q2[i].IsValid())
+					continue;
 				QuaternionSM( s2, q2[i], q1[i], q1[i] );
 #else
 				fltx4 q1simd = LoadUnalignedSIMD( q1[i].Base() );
@@ -1793,6 +1795,8 @@ void InitPose(
 			if (pStudioHdr->boneFlags(  i ) & boneMask ) 
 			{
 				mstudiobone_t *pbone = pStudioHdr->pBone( i );
+				if (pbone == NULL)
+					return;
 				pos[i] = pbone->pos;
 				q[i] = pbone->quat;
 			}
@@ -1805,6 +1809,8 @@ void InitPose(
 		{
 			if (pStudioHdr->boneFlags(  i ) & boneMask ) 
 			{
+				if (pLinearBones == NULL)
+					return;
 				pos[i] = pLinearBones->pos(i);
 				q[i] = pLinearBones->quat(i);
 			}

@@ -18,6 +18,9 @@
 #include "soundent.h"
 #include "vstdlib/random.h"
 #include "gamestats.h"
+#ifdef MUZZLE_SMOKE
+#include "particle_parse.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -155,6 +158,10 @@ IMPLEMENT_ACTTABLE(CWeaponShotgun);
 
 void CWeaponShotgun::Precache( void )
 {
+#ifdef MUZZLE_SMOKE
+	PrecacheParticleSystem("weapon_muzzle_smoke");
+	PrecacheParticleSystem("weapon_muzzle_smoke_long");
+#endif
 	CBaseCombatWeapon::Precache();
 }
 
@@ -490,6 +497,15 @@ void CWeaponShotgun::PrimaryAttack( void )
 
 	m_iPrimaryAttacks++;
 	gamestats->Event_WeaponFired( pPlayer, true, GetClassname() );
+
+#ifdef MUZZLE_SMOKE
+	// Muzzle Smoke
+	if (m_iClip1 && !((pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0) && (m_iClip1 <= 1)))
+	{
+		// Start the muzzle smoking effect
+		DispatchParticleEffect("weapon_muzzle_smoke_long", PATTACH_POINT_FOLLOW, pPlayer->GetViewModel(), "muzzle", true);
+	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -547,6 +563,15 @@ void CWeaponShotgun::SecondaryAttack( void )
 
 	m_iSecondaryAttacks++;
 	gamestats->Event_WeaponFired( pPlayer, false, GetClassname() );
+
+#ifdef MUZZLE_SMOKE
+	// Muzzle Smoke
+	if (m_iClip1 && (!(pPlayer->GetAmmoCount(m_iPrimaryAmmoType) <= 0) && !m_iClip1))
+	{
+		// Start the muzzle smoking effect
+		DispatchParticleEffect("weapon_muzzle_smoke", PATTACH_POINT_FOLLOW, pPlayer->GetViewModel(), "muzzle", true);
+	}
+#endif
 }
 	
 //-----------------------------------------------------------------------------

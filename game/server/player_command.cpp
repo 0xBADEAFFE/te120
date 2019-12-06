@@ -14,6 +14,7 @@
 #include "movehelper_server.h"
 #include "iservervehicle.h"
 #include "tier0/vprof.h"
+#include "datacache/imdlcache.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -313,6 +314,8 @@ void CommentarySystem_PePlayerRunCommand( CBasePlayer *player, CUserCmd *ucmd );
 //-----------------------------------------------------------------------------
 void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper *moveHelper )
 {
+	MDLCACHE_CRITICAL_SECTION();
+
 	const float playerCurTime = player->m_nTickBase * TICK_INTERVAL; 
 	const float playerFrameTime = player->m_bGamePaused ? 0 : TICK_INTERVAL;
 	const float flTimeAllowedForProcessing = player->ConsumeMovementTimeForUserCmdProcessing( playerFrameTime );
@@ -417,6 +420,11 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		player->pl.v_angle = ucmd->viewangles + player->pl.anglechange;
 	}
 
+	// Let server invoke any needed impact functions
+	VPROF_SCOPE_BEGIN("moveHelper->ProcessImpacts");
+	moveHelper->ProcessImpacts();
+	VPROF_SCOPE_END();
+
 	// Call standard client pre-think
 	RunPreThink( player );
 
@@ -439,15 +447,10 @@ void CPlayerMove::RunCommand ( CBasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		pVehicle->ProcessMovement( player, g_pMoveData );
 	}
 			
+	RunPostThink(player);
+
 	// Copy output
 	FinishMove( player, ucmd, g_pMoveData );
-
-	// Let server invoke any needed impact functions
-	VPROF_SCOPE_BEGIN( "moveHelper->ProcessImpacts" );
-	moveHelper->ProcessImpacts();
-	VPROF_SCOPE_END();
-
-	RunPostThink( player );
 
 	g_pGameMovement->FinishTrackPredictionErrors( player );
 

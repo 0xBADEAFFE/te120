@@ -42,9 +42,15 @@ public:
 	void	Operator_HandleAnimEvent( animevent_t *pEvent, CBaseCombatCharacter *pOperator );
 
 //TE120--
+#ifdef TE120
 	int		GetMinBurst( void );
 	int		GetMaxBurst( void );
 	float	GetFireRate( void );
+#else
+	int		GetMinBurst( void ) { return 2; }
+	int		GetMaxBurst( void ) { return 5; }
+	float	GetFireRate( void ) { return 0.1f; }
+#endif // TE120
 //TE120--
 
 	bool	CanHolster( void );
@@ -60,10 +66,14 @@ public:
 	{
 		static Vector cone;
 //TE120--
+#ifdef TE120
 		if ( GetOwner()->IsPlayer() )
+#endif // TE120
 			cone = VECTOR_CONE_3DEGREES;
+#ifdef TE120
 		else
 			cone = VECTOR_CONE_5DEGREES;
+#endif // TE120
 //TE120--
 		return cone;
 	}

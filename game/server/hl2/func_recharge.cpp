@@ -18,7 +18,9 @@
 #include "player.h"
 #include "engine/IEngineSound.h"
 #include "in_buttons.h"
-#include "ammodef.h"//TE120
+#ifdef TE120
+#include "ammodef.h" // TE120
+#endif // TE120
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -29,7 +31,9 @@ static ConVar	sk_suitcharger_citadel_maxarmor( "sk_suitcharger_citadel_maxarmor"
 
 #define SF_CITADEL_RECHARGER	0x2000
 #define SF_KLEINER_RECHARGER	0x4000 // Gives only 25 health
-#define SF_PHYSCON_RECHARGER	0x8000//TE120
+#ifdef TE120
+#define SF_PHYSCON_RECHARGER	0x8000 // TE120
+#endif // TE120
 
 class CRecharge : public CBaseToggle
 {
@@ -158,7 +162,16 @@ int CRecharge::DrawDebugTextOverlays(void)
 //-----------------------------------------------------------------------------
 float CRecharge::MaxJuice()	const
 {
+#ifdef TE120
 	return sk_suitcharger_citadel.GetFloat();//TE120
+#else
+	if ( HasSpawnFlags( SF_CITADEL_RECHARGER ) )
+	{
+		return sk_suitcharger_citadel.GetFloat();
+	}
+	
+	return sk_suitcharger.GetFloat();
+#endif // TE120
 }
 
 
@@ -354,7 +367,9 @@ private:
 	DECLARE_DATADESC();
 
 	float	m_flNextCharge;
+#ifdef TE120
 	bool	m_bHasWPC;//TE120
+#endif // TE120
 	int		m_iReactivate ; // DeathMatch Delay until reactvated
 	int		m_iJuice;
 	int		m_iOn;			// 0 = off, 1 = startup, 2 = going
@@ -377,7 +392,9 @@ private:
 BEGIN_DATADESC( CNewRecharge )
 
 	DEFINE_FIELD( m_flNextCharge, FIELD_TIME ),
+#ifdef TE120
 	DEFINE_FIELD( m_bHasWPC, FIELD_BOOLEAN ),//TE120
+#endif // TE120
 	DEFINE_FIELD( m_iReactivate, FIELD_INTEGER),
 	DEFINE_FIELD( m_iJuice, FIELD_INTEGER),
 	DEFINE_FIELD( m_iOn, FIELD_INTEGER),
@@ -440,7 +457,9 @@ void CNewRecharge::Precache( void )
 	PrecacheScriptSound( "SuitRecharge.Deny" );
 	PrecacheScriptSound( "SuitRecharge.Start" );
 	PrecacheScriptSound( "SuitRecharge.ChargingLoop" );
+#ifdef TE120
 	PrecacheScriptSound( "NPC_Advisor.Shieldup" );//TE120
+#endif // TE120
 }
 
 void CNewRecharge::SetInitialCharge( void )
@@ -459,11 +478,13 @@ void CNewRecharge::SetInitialCharge( void )
 	}
 
 //TE120--
+#ifdef TE120
 	if ( HasSpawnFlags( SF_PHYSCON_RECHARGER ) )
 	{
 		m_iMaxJuice = 40.0f;
 		return;
 	}
+#endif // TE120
 //TE120--
 	m_iMaxJuice =  sk_suitcharger.GetFloat();
 }
@@ -488,10 +509,12 @@ void CNewRecharge::Spawn()
 	m_nState = 0;
 	m_iCaps	= FCAP_CONTINUOUS_USE;
 //TE120--
+#ifdef TE120
 	m_bHasWPC = false;
 
 	if ( HasSpawnFlags( SF_PHYSCON_RECHARGER ) )
 		m_nSkin = 1;
+#endif // TE120
 //TE120--
 
 	CreateVPhysics();
@@ -679,6 +702,7 @@ void CNewRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 		}
 	}
 //TE120--
+#ifdef TE120
 	int numIndexGC = GetAmmoDef()->Index( "GC_Energy" );
 	if ( HasSpawnFlags( SF_PHYSCON_RECHARGER ) )
 	{
@@ -697,10 +721,15 @@ void CNewRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 			}
 		}
 	}
+#endif // TE120
 //TE120--
 
 	// If we're over our limit, debounce our keys
+#ifdef TE120
 	if ( pPlayer->ArmorValue() >= nMaxArmor && (!m_bHasWPC || pPlayer->GetAmmoCount(numIndexGC) >= GetAmmoDef()->MaxCarry(numIndexGC)) ) //TE120
+#else
+	if ( pPlayer->ArmorValue() >= nMaxArmor)
+#endif // TE120	
 	{
 		// Citadel charger must also be at max health
 		if ( !HasSpawnFlags(SF_CITADEL_RECHARGER) || ( HasSpawnFlags( SF_CITADEL_RECHARGER ) && pActivator->GetHealth() >= pActivator->GetMaxHealth() ) )
@@ -744,17 +773,20 @@ void CNewRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	if ( pPlayer->ArmorValue() < nMaxArmor )
 	{
 //TE120--
+#ifdef TE120
 		if ( m_bHasWPC && pPlayer->GetAmmoCount(numIndexGC) < GetAmmoDef()->MaxCarry(numIndexGC) && ( m_iJuice % 2 == 0 ) )
 		{
 			pPlayer->GiveAmmo( 5, numIndexGC, true );
 			CPASAttenuationFilter filter( this, "NPC_Advisor.Shieldup" );
 			EmitSound( filter, entindex(), "NPC_Advisor.Shieldup" );
 		}
+#endif // TE120
 //TE120--
 		UpdateJuice( m_iJuice - nIncrementArmor );
 		pPlayer->IncrementArmorValue( nIncrementArmor, nMaxArmor );
 	}
 //TE120--
+#ifdef TE120
 	else if ( m_bHasWPC && pPlayer->GetAmmoCount( numIndexGC ) < GetAmmoDef()->MaxCarry( numIndexGC ) && ( m_iJuice % 2 == 0 ) )
 	{
 		UpdateJuice( m_iJuice - nIncrementArmor );
@@ -766,6 +798,7 @@ void CNewRecharge::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 	{
 		UpdateJuice( m_iJuice - nIncrementArmor );
 	}
+#endif // TE120
 //TE120--
 
 	// Send the output.

@@ -288,6 +288,7 @@ extern "C" {
 #define ACHIEVEMENT_TF_LAST_ORANGEBOX				150
 
 //TE120--
+#ifdef TE120
 //
 // TE120 Achievement ids
 //
@@ -302,6 +303,7 @@ extern "C" {
 #define ACHIEVEMENT_E120_CHAPTER_3 8
 #define ACHIEVEMENT_E120_CHAPTER_4 9
 #define ACHIEVEMENT_E120_STRIDER_SMASHER 10
+#endif // TE120
 //TE120--
 
 //

@@ -240,6 +240,7 @@ public:
 	CAI_ActBusyBehavior		m_ActBusyBehavior;
 
 //TE120--
+#ifdef TE120
 	bool	m_bDisallowHeadcrab;	// is this zombie allowed to spawn headcrab in death?
 
 	//---------------------------------
@@ -247,6 +248,7 @@ public:
 	//---------------------------------
 	COutputEvent		m_OnIlluminated;
 	COutputEvent		m_OnNotIlluminated;
+#endif // TE120
 //TE120--
 protected:
 
@@ -255,7 +257,9 @@ protected:
 	bool	m_fIsTorso;			// is this is a half-zombie?
 	bool	m_fIsHeadless;		// is this zombie headless
 //TE120--
+#ifdef TE120
 	bool	m_fIsIlluminated;	// is this zombie illuminated by the players flashlight?
+#endif // TE120
 //TE120--
 	float	m_flNextFlinch;
 

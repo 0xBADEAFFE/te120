@@ -795,10 +795,15 @@ public:
 	void NotifyVPhysicsStateChanged( IPhysicsObject *pPhysics, CBaseEntity *pEntity, bool bAwake )
 	{
 #if HINGE_NOTIFY
+//#ifndef TE120
+		Assert(m_pConstraint);
+//#endif // TE120
 		if (!m_pConstraint)
 			return;
 
-		Assert(m_pConstraint);//TE120
+//#ifdef TE120
+//		Assert(m_pConstraint);//TE120
+//#endif // TE120
 
 		// if something woke up, start thinking. If everything is asleep, stop thinking.
 		if ( bAwake )
@@ -818,6 +823,7 @@ public:
 		else
 		{
 //TE120--
+#ifdef TE120
 			if ( !m_pConstraint->GetAttachedObject() )
 			{
 				m_soundInfo.StopThinking(this);
@@ -825,8 +831,13 @@ public:
 			}
 			// Is everything asleep? If so, stop thinking.
 			else if ( GetNextThink() != TICK_NEVER_THINK && m_pConstraint->GetAttachedObject()->IsAsleep() && m_pConstraint->GetReferenceObject()->IsAsleep() )
-			{
+#else
+			if ( GetNextThink() != TICK_NEVER_THINK				&&
+				m_pConstraint->GetAttachedObject()->IsAsleep() &&
+				m_pConstraint->GetReferenceObject()->IsAsleep() )
+#endif // TE120
 //TE120--
+			{
 				m_soundInfo.StopThinking(this);
 				SetNextThink(TICK_NEVER_THINK);
 			}
@@ -872,6 +883,8 @@ private:
 	bool IsWorldHinge( const hl_constraint_info_t &info, int *pAxisOut );
 };
 
+#pragma warning( push )
+#pragma warning( disable : 4838 )
 BEGIN_DATADESC( CPhysHinge )
 
 // Quiet down classcheck
@@ -902,7 +915,7 @@ BEGIN_DATADESC( CPhysHinge )
 #endif
 
 END_DATADESC()
-
+#pragma warning( pop )
 
 LINK_ENTITY_TO_CLASS( phys_hinge, CPhysHinge );
 
@@ -992,8 +1005,10 @@ static int GetUnitAxisIndex( const Vector &axis )
 bool CPhysHinge::IsWorldHinge( const hl_constraint_info_t &info, int *pAxisOut )
 {
 //TE120--
+#ifdef TE120
 	if ( !info.pObjects[0] )
 		return false;
+#endif // TE120
 //TE120--
 	if ( HasSpawnFlags( SF_CONSTRAINT_ASSUME_WORLD_GEOMETRY ) && info.pObjects[0] == g_PhysWorldObject )
 	{
@@ -1014,13 +1029,19 @@ bool CPhysHinge::IsWorldHinge( const hl_constraint_info_t &info, int *pAxisOut )
 #if HINGE_NOTIFY
 void CPhysHinge::SoundThink( void )
 {
+//#ifndef TE120
+		Assert(m_pConstraint);
+//#endif // TE120
 	if (!m_pConstraint)
 		return;
-
-	Assert(m_pConstraint);//TE120
+//#ifdef TE120
+	//Assert(m_pConstraint);//TE120
+//#endif // TE120
 
 	IPhysicsObject * pAttached = m_pConstraint->GetAttachedObject(), *pReference = m_pConstraint->GetReferenceObject();
-
+//#ifndef TE120
+	Assert( pAttached && pReference );
+//#endif // TE120
 	if (pAttached && pReference)
 	{
 		Vector relativeVel = VelocitySampler::GetRelativeAngularVelocity(pAttached,pReference);
@@ -1050,17 +1071,17 @@ public:
 		{
 			info.pObjects[i]->WorldToLocal( &ballsocket.constraintPosition[i], GetAbsOrigin() );
 			// HACKHACK - the mapper forgot to put in some sane physics damping
-      float damping, adamping;
-      info.pObjects[i]->GetDamping(&damping, &adamping);
-      if ( damping < .2f )
+	      	float damping, adamping;
+	      	info.pObjects[i]->GetDamping(&damping, &adamping);
+	      	if ( damping < .2f )
 			{
-      	damping = .2f;
-      }
+	      		damping = .2f;
+	      	}
 			if ( adamping < .2f )
 			{
-        adamping = .2f;
-      }
-      info.pObjects[i]->SetDamping(&damping, &damping);
+	        	adamping = .2f;
+	      	}
+	      	info.pObjects[i]->SetDamping(&damping, &damping);
 		}
 		GetBreakParams( ballsocket.constraint, info );
 		ballsocket.constraint.torqueLimit = 0;
@@ -1192,6 +1213,8 @@ protected:
 
 LINK_ENTITY_TO_CLASS( phys_slideconstraint, CPhysSlideConstraint );
 
+#pragma warning( push )
+#pragma warning( disable : 4838 )
 BEGIN_DATADESC( CPhysSlideConstraint )
 
 	DEFINE_KEYFIELD( m_axisEnd, FIELD_POSITION_VECTOR, "slideaxis" ),
@@ -1217,7 +1240,7 @@ BEGIN_DATADESC( CPhysSlideConstraint )
 #endif
 
 END_DATADESC()
-
+#pragma warning( pop )
 
 
 IPhysicsConstraint *CPhysSlideConstraint::CreateConstraint( IPhysicsConstraintGroup *pGroup, const hl_constraint_info_t &info )
@@ -1554,7 +1577,9 @@ public:
 		BaseClass::DrawDebugGeometryOverlays();
 	}
 #endif
+#ifdef TE120
 	bool ActivateConstraint( void );//TE120
+#endif // TE120
 	IPhysicsConstraint *CreateConstraint( IPhysicsConstraintGroup *pGroup, const hl_constraint_info_t &info );
 
 private:
@@ -1587,6 +1612,7 @@ END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( phys_ragdollconstraint, CRagdollConstraint );
 //TE120--
+#ifdef TE120
 bool CRagdollConstraint::ActivateConstraint( void )
 {
 	// A constraint attaches two objects to each other.
@@ -1673,6 +1699,7 @@ bool CRagdollConstraint::ActivateConstraint( void )
 
 	return true;
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------

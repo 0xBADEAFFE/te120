@@ -1145,10 +1145,16 @@ void CSave::WriteFunction( datamap_t *pRootMap, const char *pname, inputfunc_t *
 	const char *functionName = UTIL_FunctionToName( pRootMap, *data );
 	if ( !functionName )
 	{
+#ifdef TE120
 		extern ConVar developer;
-		if ( developer.GetInt() )
-			Warning( "Invalid function pointer in entity!\n" );
-		// Assert(0);
+		if (developer.GetInt())
+		{
+#endif
+			Warning("Invalid function pointer in entity!\n");
+			Assert(0);
+#ifdef TE120
+		}
+#endif
 		functionName = "BADFUNCTIONPOINTER";
 	}
 
@@ -2746,6 +2752,9 @@ void CEntitySaveRestoreBlockHandler::PostRestore()
 
 void SaveEntityOnTable( CBaseEntity *pEntity, CSaveRestoreData *pSaveData, int &iSlot )
 {
+	if (!pEntity)
+		return;
+
 	entitytable_t *pEntInfo = pSaveData->GetEntityInfo( iSlot );
 	pEntInfo->id = iSlot;
 #if !defined( CLIENT_DLL )

@@ -54,7 +54,9 @@
 #include "filters.h"
 #include "saverestore_utlvector.h"
 #include "eventqueue.h"
+#ifdef TE120
 #include "prop_gravity_ball.h"//TE120
+#endif // TE120
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -104,8 +106,13 @@ ConVar strider_ar2_altfire_dmg( "strider_ar2_altfire_dmg", "25" );
 // Number of RPG hits it takes to kill a strider on each skill level.
 ConVar sk_strider_num_missiles1("sk_strider_num_missiles1", "5");
 //TE120--
+#ifdef TE120
 ConVar sk_strider_num_missiles2("sk_strider_num_missiles2", "5");
 ConVar sk_strider_num_missiles3("sk_strider_num_missiles3", "5");
+#else
+ConVar sk_strider_num_missiles2("sk_strider_num_missiles2", "7");
+ConVar sk_strider_num_missiles3("sk_strider_num_missiles3", "7");
+#endif // TE120
 //TE120--
 
 ConVar strider_missile_suppress_dist( "strider_missile_suppress_dist", "240" );
@@ -129,12 +136,21 @@ enum bodygroups
 
 #define STRIDER_DEFAULT_SHOOT_DURATION			2.5 // spend this much time stitching to each target.
 //TE120--
+#ifdef TE120
 #define STRIDER_SHOOT_ON_TARGET_TIME			0.3 // How much of DEFAULT_SHOOT_DURATION is spent on-target (vs. stitching up to a target)
 #define STRIDER_SHOOT_VARIATION					1.5 // up to 1 second of variance
 #define STRIDER_SHOOT_DOWNTIME					2.0 // This much downtime between bursts
 #define STRIDER_SUBSEQUENT_TARGET_DURATION		2.5 // Spend this much time stitching to targets chosen by distributed fire.
 #define STRIDER_IGNORE_TARGET_DURATION			2.0
 #define STRIDER_IGNORE_PLAYER_DURATION			2.0
+#else
+#define STRIDER_SHOOT_ON_TARGET_TIME			0.5 // How much of DEFAULT_SHOOT_DURATION is spent on-target (vs. stitching up to a target)
+#define STRIDER_SHOOT_VARIATION					1.0 // up to 1 second of variance
+#define STRIDER_SHOOT_DOWNTIME					1.0 // This much downtime between bursts
+#define STRIDER_SUBSEQUENT_TARGET_DURATION		1.5 // Spend this much time stitching to targets chosen by distributed fire.
+#define STRIDER_IGNORE_TARGET_DURATION			1.0
+#define STRIDER_IGNORE_PLAYER_DURATION			1.5
+#endif // TE120
 //TE120--
 #define STRIDER_DEFAULT_RATE_OF_FIRE			5	// Rounds per second
 
@@ -1817,13 +1833,25 @@ void CNPC_Strider::RunTask( const Task_t *pTask )
 //-----------------------------------------------------------------------------
 void CNPC_Strider::Explode( void )
 {
-	Vector velocity = vec3_origin + Vector( 0, 0, -64 );//TE120
+#ifdef TE120
+	Vector			velocity = vec3_origin + Vector( 0, 0, -64 );//TE120
+#else
+	Vector			velocity = vec3_origin;
+#endif // TE120
 	AngularImpulse	angVelocity = RandomAngularImpulse( -150, 150 );
 
 	// Break into pieces
+#ifdef TE120
 	breakablepropparams_t params( EyePosition() + Vector( 0 , 0 , 64 ), GetAbsAngles(), velocity, angVelocity );//TE120
+#else
+	breakablepropparams_t params( EyePosition(), GetAbsAngles(), velocity, angVelocity );
+#endif // TE120	
 	params.impactEnergyScale = 1.0f;
+#ifdef TE120
 	params.defBurstScale = 300.0f;//TE120
+#else
+	params.defBurstScale = 600.0f;
+#endif // TE120
 	params.defCollisionGroup = COLLISION_GROUP_NPC;
 	PropBreakableCreateAll( GetModelIndex(), NULL, params, this, -1, true, true );
 
@@ -1839,10 +1867,12 @@ void CNPC_Strider::Explode( void )
 
 	m_BoneFollowerManager.DestroyBoneFollowers();
 
+#ifdef TE120
 	// Fire event for achievement: E120_STRIDER_SMASHER
 	IGameEvent *event = gameeventmanager->CreateEvent( "strider_smasher" );
 	if ( event )
 		gameeventmanager->FireEvent( event );
+#endif // TE120
 }
 
 //-----------------------------------------------------------------------------
@@ -1880,11 +1910,13 @@ void CNPC_Strider::HandleAnimEvent( animevent_t *pEvent )
 	case STRIDER_AE_WINDUPCANNON:
 		{
 //TE120--
+#ifdef TE120
 			// Don't shoot unless player is looking.
 			CBasePlayer *pPlayer = AI_GetSinglePlayer();
 
-			if ( pPlayer->FVisible(this) )
+			if ( pPlayer && pPlayer->FVisible(this) )
 			{
+#endif // TE120
 				AimCannonAt( GetCannonTarget(), 0.1 );
 
 				// Stop the minigun for a bit, the big gun's about to shoot!
@@ -1908,7 +1940,9 @@ void CNPC_Strider::HandleAnimEvent( animevent_t *pEvent )
 				EmitSound( filter2, entindex(), "NPC_Strider.Charge" );
 			}
 //TE120--
+#ifdef TE120
 		}
+#endif // TE120
 		break;
 	case STRIDER_AE_CANNONHIT:
 		CreateConcussiveBlast( m_blastHit, m_blastNormal, this, 2.5 );
@@ -2270,7 +2304,18 @@ void CNPC_Strider::InputSetTargetPath( inputdata_t &inputdata )
 	m_strTrackName = MAKE_STRING( inputdata.value.String() );
 	SetGoalEnt( NULL );
 //TE120--
+#ifdef TE120
 	SetTargetPath();
+#else
+	if( !IsStriderCrouching() && !IsStriderStanding() && !IsInCrouchedPosture() )
+	{
+		SetTargetPath();
+	}
+
+	// Otherwise, we just leave the track name set and the AI will
+	// get to it as soon as possible (as soon as the strider can be
+	// made to stand).
+#endif // TE120
 //TE120--
 }
 
@@ -2359,7 +2404,11 @@ void CNPC_Strider::InputDisableMoveToLOS( inputdata_t &inputdata )
 void CNPC_Strider::InputExplode( inputdata_t &inputdata )
 {
 	CTakeDamageInfo killInfo;
+#ifdef TE120
 	killInfo.SetAttacker( AI_GetSinglePlayer() );//TE120
+#else
+	killInfo.SetAttacker( this );
+#endif // TE120
 	killInfo.SetInflictor( this );
 	killInfo.SetDamage( GetHealth() );
 	TakeDamage( killInfo );
@@ -2988,7 +3037,9 @@ void CNPC_Strider::DeathSound( const CTakeDamageInfo &info )
 	if ( m_bExploding )
 	{
 		EmitSound( "NPC_Strider.StriderBusterExplode" );
-		//EmitSound( "explode_5" ); //TES Removed
+#ifndef TE120
+		EmitSound( "explode_5" );
+#endif // TE120
 		return;
 	}
 
@@ -3200,19 +3251,23 @@ int CNPC_Strider::TakeDamageFromCombineBall( const CTakeDamageInfo &info )
 	// If it's only an AR2 alt-fire, we don't take much damage
 	if ( UTIL_IsAR2CombineBall( info.GetInflictor() ) )
 	{
-//TES changed----------------------
+//TE120--
+#ifdef TE120
 		// If gravity ball only do 12 damage, requires 29 hits or 6 plus 4 rockets
 		if ( UTIL_IsGravityBall( info.GetInflictor() ) )
 			damage = 0;
 		else
+#endif // TE120
 			damage = strider_ar2_altfire_dmg.GetFloat();
 	}
 	else
 	{
 		// Always start smoking when we're struck by a normal combine ball
+#ifdef TE120
 		if ( !UTIL_IsGravityBall( info.GetInflictor() ) )
+#endif // TE120
 			StartSmoking();
-//TES changed-----------
+//TE120--
 	}
 
 	if( info.GetAttacker() && info.GetAttacker()->IsPlayer() )
@@ -3708,10 +3763,20 @@ bool CNPC_Strider::HasPendingTargetPath()
 //---------------------------------------------------------
 void CNPC_Strider::SetTargetPath()
 {
+#ifndef TE120
+	SetGoalEnt( NULL );
+#endif // TE120
 	CBaseEntity *pGoalEnt = gEntList.FindEntityByName( NULL, m_strTrackName );
 	if ( pGoalEnt == NULL )
 	{
 		DevWarning( "%s: Could not find target path '%s'!\n", GetClassname(), STRING( m_strTrackName ) );
+
+#ifndef TE120
+		// Don't try anymore. It just hurts the AI.
+		m_strTrackName = MAKE_STRING( STRIDER_NO_TRACK_NAME );
+
+		UTIL_Remove( this );
+#endif // TE120
 		return;
 	}
 
@@ -3735,11 +3800,15 @@ void CNPC_Strider::SetTargetPath()
 		pCurEnt = GetNavigator()->GetNextPathcorner( pCurEnt );
 	}
 //TE120--
+#ifdef TE120
 	if ( GetGoalEnt() != pClosestEnt )
 	{
 		SetGoalEnt( NULL );
+#endif // TE120
 		ScheduledFollowPath( SCHED_IDLE_WALK, pClosestEnt, ACT_WALK );
+#ifdef TE120
 	}
+#endif // TE120
 //TE120--
 }
 

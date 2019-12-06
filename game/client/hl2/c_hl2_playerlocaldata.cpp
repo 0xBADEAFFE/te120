@@ -8,14 +8,18 @@
 #include "c_hl2_playerlocaldata.h"
 #include "dt_recv.h"
 //TE120--
-#include "hud_locator.h"
+#ifdef TE120
+#include "te120/hud_locator.h"
 #include "usermessages.h"
+#endif // TE120
 //TE120--
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-C_HL2PlayerLocalData *g_pPlayerLocalData = NULL;//TE120
+#ifdef TE120
+C_HL2PlayerLocalData *g_pPlayerLocalData = NULL; // TE120
+#endif // TE120
 
 BEGIN_RECV_TABLE_NOBASE( C_HL2PlayerLocalData, DT_HL2Local )
 	RecvPropFloat( RECVINFO(m_flSuitPower) ),
@@ -35,9 +39,11 @@ BEGIN_RECV_TABLE_NOBASE( C_HL2PlayerLocalData, DT_HL2Local )
 	RecvPropFloat( RECVINFO(m_flFlashBattery) ),
 	RecvPropVector( RECVINFO(m_vecLocatorOrigin) ),
 //TE120--
+#ifdef TE120
 	RecvPropInt( RECVINFO(m_iNumLocatorContacts) ),
 	RecvPropArray( RecvPropEHandle( RECVINFO(m_locatorEnt[0]) ), m_locatorEnt ),
 	RecvPropArray( RecvPropInt( RECVINFO(m_iLocatorContactType[0]) ), m_iLocatorContactType ),
+#endif // TE120
 //TE120--
 #endif
 END_RECV_TABLE()
@@ -47,6 +53,7 @@ BEGIN_PREDICTION_DATA_NO_BASE( C_HL2PlayerLocalData )
 END_PREDICTION_DATA()
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -63,6 +70,7 @@ void __MsgFunc_UpdatePlayerLocator(bf_read &msg)
 	}
 #endif
 }
+#endif // TE120
 //TE120--
 
 C_HL2PlayerLocalData::C_HL2PlayerLocalData()
@@ -77,12 +85,17 @@ C_HL2PlayerLocalData::C_HL2PlayerLocalData()
 #ifdef HL2_EPISODIC
 	m_flFlashBattery = 0.0f;
 	m_vecLocatorOrigin = vec3_origin;
-	m_iNumLocatorContacts = 0;//TE120
+#ifdef TE120
+	m_iNumLocatorContacts = 0; // TE120
+#endif // TE120
+
 #endif
 //TE120--
+#ifdef TE120
 	if( g_pPlayerLocalData == NULL )
 		usermessages->HookMessage( "UpdatePlayerLocator", __MsgFunc_UpdatePlayerLocator );
 
 	g_pPlayerLocalData = this;
+#endif // TE120
 //TE120--
 }

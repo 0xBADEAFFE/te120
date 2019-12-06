@@ -36,6 +36,7 @@ public:
 
 	int			DrawDebugTextOverlays(void);
 
+	//* BM: Overriding this to run a fix when it is called */
 	virtual void SetParent( CBaseEntity* pNewParent, int iAttachment = -1 );
 
 	// Input handlers
@@ -57,8 +58,10 @@ public:
 	float		m_flMoveDistance;		// Total distance the brush can move
 
 //TE120----
+#ifdef TE120
 	EHANDLE		m_hPosition1;			// Used to mark end position
 	EHANDLE		m_hPosition2;			// Used to mark start position
+#endif // TE120
 //TE120----
 
 	IPhysicsFluidController *m_pFluidController;

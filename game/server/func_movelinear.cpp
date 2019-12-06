@@ -40,8 +40,10 @@ BEGIN_DATADESC( CFuncMoveLinear )
 	DEFINE_KEYFIELD( m_flStartPosition, FIELD_FLOAT,	"StartPosition"),
 	DEFINE_KEYFIELD( m_flMoveDistance,  FIELD_FLOAT,	"MoveDistance"),
 //TE120--
+#ifdef TE120
 	DEFINE_KEYFIELD( m_hPosition1, FIELD_EHANDLE, "fmlPos1"),
 	DEFINE_KEYFIELD( m_hPosition2, FIELD_EHANDLE, "fmlPos2"),
+#endif // TE120
 //TE120--
 
 //	DEFINE_PHYSPTR( m_pFluidController ),
@@ -90,14 +92,24 @@ void CFuncMoveLinear::Spawn( void )
 	}
 
 //TE120--
+#ifdef TE120
 	m_hPosition1 = CreateEntityByName( "info_target" );
 	m_hPosition2 = CreateEntityByName( "info_target" );
+#endif // TE120
 //TE120--
-
+	
+	/* BM: Fixing this based on: https://developer.valvesoftware.com/wiki/CFuncMoveLinear_Fix
+	m_vecPosition1 = GetAbsOrigin() - (m_vecMoveDir * m_flMoveDistance * m_flStartPosition);
+	m_vecPosition2 = m_vecPosition1 + (m_vecMoveDir * m_flMoveDistance);
+	m_vecFinalDest = GetAbsOrigin();
+	//*/
 	m_vecPosition1 = GetLocalOrigin() - (m_vecMoveDir * m_flMoveDistance * m_flStartPosition);
 	m_vecPosition2 = m_vecPosition1 + (m_vecMoveDir * m_flMoveDistance);
+	m_vecFinalDest = GetLocalOrigin();
+	//*/ The start & end positions are now calculated in local (parent) space.
 
 //TE120--
+#ifdef TE120
 	// Update position reference entities
 	if ( m_hPosition1 != NULL )
 	{
@@ -112,6 +124,7 @@ void CFuncMoveLinear::Spawn( void )
 		if ( GetParent() )
 			m_hPosition2->SetParent( GetParent() );
 	}
+#endif // TE120
 //TE120--
 
 	m_vecFinalDest = GetLocalOrigin();
@@ -284,18 +297,28 @@ void CFuncMoveLinear::MoveDone( void )
 	SetNextThink( gpGlobals->curtime + 0.1f );
 	BaseClass::MoveDone();
 //TE120--
+#ifdef TE120
 	if ( m_hPosition2 != NULL && m_hPosition1 != NULL)
 	{
 		if ( GetLocalOrigin() == m_hPosition2->GetLocalOrigin() )
+#else
+		if ( GetAbsOrigin() == m_vecPosition2 )
+#endif // TE120
 		{
 			m_OnFullyOpen.FireOutput( this, this );
 		}
+#ifdef TE120
 		else if ( GetLocalOrigin() == m_hPosition1->GetLocalOrigin() )
+#else
+		else if ( GetAbsOrigin() == m_vecPosition1 )
+#endif // TE120
 		{
 			m_OnFullyClosed.FireOutput( this, this );
 		}
-//TE120--
+#ifdef TE120
 	}
+#endif // TE120
+//TE120--
 }
 
 
@@ -307,13 +330,19 @@ void CFuncMoveLinear::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 	if ( useType != USE_SET )		// Momentary buttons will pass down a float in here
 		return;
 //TE120--
+#ifdef TE120
 	if ( m_hPosition2 == NULL || m_hPosition1 == NULL )
 		return;
+#endif // TE120
 //TE120--
 	if ( value > 1.0f )
 		value = 1.0f;
 //TE120--
+#ifdef TE120
 	Vector move = m_hPosition1->GetLocalOrigin() + ( value * ( m_hPosition2->GetLocalOrigin() - m_hPosition1->GetLocalOrigin() ) );
+#else
+	Vector move = m_vecPosition1 + (value * (m_vecPosition2 - m_vecPosition1));
+#endif // TE120
 //TE120--
 	Vector delta = move - GetLocalOrigin();
 	float speed = delta.Length() * 10;
@@ -328,13 +357,17 @@ void CFuncMoveLinear::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TY
 void CFuncMoveLinear::SetPosition( float flPosition )
 {
 //TE120--
+#ifdef TE120
 	if ( m_hPosition2 == NULL || m_hPosition1 == NULL )
 		return;
 
 	Vector vTargetPos = m_hPosition1->GetLocalOrigin() + ( flPosition * (m_hPosition2->GetLocalOrigin() - m_hPosition1->GetLocalOrigin()));
+#else
+	Vector vTargetPos = m_vecPosition1 + ( flPosition * (m_vecPosition2 - m_vecPosition1));
+#endif // TE120
+//TE120--
 	if ( ( vTargetPos - GetLocalOrigin() ).Length() > 0.001 )
 	{
-//TE120--
 		MoveTo(vTargetPos, m_flSpeed);
 	}
 }
@@ -346,6 +379,7 @@ void CFuncMoveLinear::SetPosition( float flPosition )
 void CFuncMoveLinear::InputOpen( inputdata_t &inputdata )
 {
 //TE120--
+#ifdef TE120
 	if ( m_hPosition2 == NULL )
 		return;
 
@@ -353,6 +387,12 @@ void CFuncMoveLinear::InputOpen( inputdata_t &inputdata )
 	{
 		MoveTo(m_hPosition2->GetLocalOrigin(), m_flSpeed);
 	}
+#else
+	if (GetLocalOrigin() != m_vecPosition2)
+	{
+		MoveTo(m_vecPosition2, m_flSpeed);
+	}
+#endif // TE120
 //TE120--
 }
 
@@ -363,6 +403,7 @@ void CFuncMoveLinear::InputOpen( inputdata_t &inputdata )
 void CFuncMoveLinear::InputClose( inputdata_t &inputdata )
 {
 //TE120--
+#ifdef TE120
 	if ( m_hPosition1 == NULL )
 		return;
 
@@ -370,6 +411,12 @@ void CFuncMoveLinear::InputClose( inputdata_t &inputdata )
 	{
 		MoveTo( m_hPosition1->GetLocalOrigin(), m_flSpeed );
 	}
+#else
+	if (GetLocalOrigin() != m_vecPosition1)
+	{
+		MoveTo(m_vecPosition1, m_flSpeed);
+	}
+#endif // TE120
 //TE120--
 }
 
@@ -446,13 +493,13 @@ int CFuncMoveLinear::DrawDebugTextOverlays(void)
 	return text_offset;
 }
 
-
+/* BM: Overriding this to run a fix when it is called */
 //-----------------------------------------------------------------------------
 // Purpose: Runs a fix atfer the base version clearly dosen't cut it.
 //-----------------------------------------------------------------------------
-void CFuncMoveLinear::SetParent( CBaseEntity *pParentEntity, int iAttachment )
+void CFuncMoveLinear::SetParent(CBaseEntity* pParentEntity, int iAttachment)
 {
-	BaseClass::SetParent( pParentEntity, iAttachment );
+	BaseClass::SetParent(pParentEntity, iAttachment);
 
 	// Recompute all positions
 	m_vecPosition1 = GetLocalOrigin() - (m_vecMoveDir * m_flMoveDistance * m_flStartPosition);

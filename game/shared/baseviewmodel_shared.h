@@ -143,10 +143,15 @@ public:
 	virtual ShadowType_t	ShadowCastType() { return SHADOWS_NONE; }
 
 	// Should this object receive shadows?
+	/*
 	virtual bool			ShouldReceiveProjectedTextures( int flags )
 	{
+		// https://developer.valvesoftware.com/wiki/Env_projectedtexture/fixes#Enabling_shadow_receiving_on_the_view_model
+		// return false;
 		return true;
 	}
+	*/
+	virtual bool			ShouldReceiveProjectedTextures( int flags );
 
 	// Add entity to visible view models list?
 	virtual void			AddEntity( void );

@@ -89,7 +89,9 @@ BEGIN_DATADESC( CNPC_Bullseye )
 	DEFINE_KEYFIELD( m_fAutoaimRadius, FIELD_FLOAT, "autoaimradius" ),
 	DEFINE_KEYFIELD( m_flFieldOfView, FIELD_FLOAT, "minangle" ),
 	DEFINE_KEYFIELD( m_flMinDistValidEnemy, FIELD_FLOAT, "mindist" ),
-	DEFINE_KEYFIELD( m_vecOffset, FIELD_VECTOR, "formationoffset" ),//TE120
+#ifdef TE120
+	DEFINE_KEYFIELD( m_vecOffset, FIELD_VECTOR, "formationoffset" ), // TE120
+#endif // TE120
 	// DEFINE_FIELD( m_bPerfectAccuracy, FIELD_BOOLEAN ),	// Don't save
 
 	// Function Pointers
@@ -97,7 +99,9 @@ BEGIN_DATADESC( CNPC_Bullseye )
 
 	DEFINE_INPUTFUNC( FIELD_VOID, "InputTargeted", InputTargeted ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "InputReleased", InputReleased ),
-	DEFINE_INPUTFUNC( FIELD_VECTOR, "SetPlayerFormation", InputPlayerFormation ),//TE120
+#ifdef TE120
+	DEFINE_INPUTFUNC( FIELD_VECTOR, "SetPlayerFormation", InputPlayerFormation ), // TE120
+#endif // TE120
 
 	// Outputs
 	DEFINE_OUTPUT( m_OnTargeted, "OnTargeted"),
@@ -367,7 +371,11 @@ bool CNPC_Bullseye::CanBeAnEnemyOf( CBaseEntity *pEnemy )
 	if ( m_flMinDistValidEnemy > 0 )
 	{
 		float distSq = ( GetAbsOrigin().AsVector2D() - pEnemy->GetAbsOrigin().AsVector2D() ).LengthSqr();
-		if ( distSq > Square( m_flMinDistValidEnemy ) )//TE120
+#ifdef TE120	
+		if ( distSq > Square( m_flMinDistValidEnemy ) ) // TE120
+#else
+		if ( distSq < Square( m_flMinDistValidEnemy ) )
+#endif // TE120
 		{
 			return false;
 		}
@@ -476,6 +484,7 @@ void CNPC_Bullseye::InputReleased( inputdata_t &inputdata )
 }
 
 //TE120--
+#ifdef TE120
 void CNPC_Bullseye::InputPlayerFormation( inputdata_t &inputdata )
 {
 	Vector vTemp;
@@ -494,4 +503,5 @@ void CNPC_Bullseye::InputPlayerFormation( inputdata_t &inputdata )
 		SetAbsOrigin( vPlayerPos );
 	}
 }
+#endif // TE120
 //TE120--

@@ -152,7 +152,7 @@ void ComputeRenderInfoConc( mstudiobbox_t *pHitBox, const matrix3x4_t &hitboxToW
 	MatrixGetColumn( hitboxToWorld, 0, vec[0] );
 	MatrixGetColumn( hitboxToWorld, 1, vec[1] );
 	MatrixGetColumn( hitboxToWorld, 2, vec[2] );
-//	vec[1] *= -1.0f;
+	//vec[1] *= -1.0f;
 
 	Vector vecViewDir;
 	VectorSubtract( CurrentViewOrigin(), *pVecAbsOrigin, vecViewDir );

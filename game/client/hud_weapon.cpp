@@ -102,14 +102,18 @@ void CHudWeapon::Paint( void )
 		if ( m_pCrosshair )
 		{
 //TE120--
+#ifdef TE120
 			if ( player->m_fOnUsable && m_pCrosshair->GetCrosshairUse() )
 			{
 				m_pCrosshair->SetCrosshair( m_pCrosshair->GetCrosshairUse(), Color(255, 255, 255) );
 			}
 			else
 			{
+#endif // TE120
 				m_pCrosshair->ResetCrosshair();
+#ifdef TE120
 			}
+#endif // TE120
 //TE120--
 		}
 	}

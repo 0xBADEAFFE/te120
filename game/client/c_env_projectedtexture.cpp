@@ -33,7 +33,9 @@ public:
 	void	ShutDownLightHandle( void );
 
 	virtual void Simulate();
-	virtual void CreateShadow();//TE120
+#ifdef TE120
+	virtual void CreateShadow(); // TE120
+#endif // TE120
 
 	void	UpdateLight( bool bForceUpdate );
 
@@ -109,11 +111,13 @@ void C_EnvProjectedTexture::OnDataChanged( DataUpdateType_t updateType )
 }
 
 //TE120--
+#ifdef TE120
 void C_EnvProjectedTexture::CreateShadow()
 {
 	if ( m_bState == true )
 		BaseClass::CreateShadow();
 }
+#endif // TE120
 //TE120--
 
 void C_EnvProjectedTexture::UpdateLight( bool bForceUpdate )

@@ -85,7 +85,9 @@ BEGIN_DATADESC( CRopeKeyframe )
 	DEFINE_INPUTFUNC( FIELD_FLOAT,	"SetScrollSpeed",	InputSetScrollSpeed ),
 	DEFINE_INPUTFUNC( FIELD_VECTOR,	"SetForce",			InputSetForce ),
 	DEFINE_INPUTFUNC( FIELD_VOID,	"Break",			InputBreak ),
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_VOID,	"UpdateRope",		InputUpdateRope ),//TE120
+#endif // TE120
 
 END_DATADESC()
 
@@ -557,6 +559,7 @@ void CRopeKeyframe::InputBreak( inputdata_t &inputdata )
 }
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Updates rope for lighting
 // Input  : &inputdata -
@@ -634,6 +637,7 @@ void CRopeKeyframe::SetNameThink()
 {
 	SetName( m_strNameThink );
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------

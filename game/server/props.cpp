@@ -899,7 +899,11 @@ void CBreakableProp::Spawn()
 		m_impactEnergyScale = 0.1f;
 	}
 
+#ifdef TE120
  	m_preferredCarryAngles = QAngle( 0, 0, 0 );//TE120
+#else
+	m_preferredCarryAngles = QAngle( -5, 0, 0 );
+#endif // TE120
 
 	// The presence of this activity causes us to have to detach it before it can be grabbed.
 	if ( SelectWeightedSequence( ACT_PHYSCANNON_ANIMATE ) != ACTIVITY_NOT_AVAILABLE )
@@ -1261,6 +1265,7 @@ bool CBreakableProp::OnAttemptPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunP
 {
 	if ( m_nPhysgunState == PHYSGUN_CAN_BE_GRABBED )
 //TE120--
+#ifdef TE120
 	{
 		if ( HasSpawnFlags( SF_PHYSPROP_DONT_TAKE_PHYSICS_DAMAGE ) )
 			return false;
@@ -1271,9 +1276,14 @@ bool CBreakableProp::OnAttemptPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunP
 	if ( HasSpawnFlags( SF_PHYSPROP_ENABLE_ON_PHYSCANNON ) )
 	{
 		IPhysicsObject *pPhysicsObject = VPhysicsGetObject();
+		if (!pPhysicsObject)
+			return false;
 		pPhysicsObject->EnableMotion( false );
 		return true;
 	}
+#else
+		return true;
+#endif // TE120
 //TE120--
 	if ( m_nPhysgunState == PHYSGUN_ANIMATE_FINISHED )
 		return false;
@@ -1531,7 +1541,8 @@ void CBreakableProp::OnPhysGunDrop( CBasePlayer *pPhysGunUser, PhysGunDrop_t Rea
 
 	SetPhysicsAttacker( pPhysGunUser, gpGlobals->curtime );
 
-	if( (int)Reason == (int)PUNTED_BY_CANNON )
+	if( (int)Reason == (int)LAUNCHED_BY_CANNON)
+	// if ((int)Reason == (int)PUNTED_BY_CANNON)
 	{
 		PlayPuntSound();
 	}
@@ -1850,7 +1861,9 @@ BEGIN_DATADESC( CDynamicProp )
 	DEFINE_INPUTFUNC( FIELD_VOID,		"EnableCollision",	InputEnableCollision ),
 	DEFINE_INPUTFUNC( FIELD_VOID,		"DisableCollision",	InputDisableCollision ),
 	DEFINE_INPUTFUNC( FIELD_FLOAT,		"SetPlaybackRate",	InputSetPlaybackRate ),
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetCraneArmPosition", InputSetCraneArmPosition ),//TE120
+#endif // TE120
 
 	// Outputs
 	DEFINE_OUTPUT( m_pOutputAnimBegun, "OnAnimationBegun" ),
@@ -2277,6 +2290,7 @@ void CDynamicProp::InputSetPlaybackRate( inputdata_t &inputdata )
 }
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose:
 // Input  : &inputdata -
@@ -2287,7 +2301,9 @@ void CDynamicProp::InputSetCraneArmPosition( inputdata_t &inputdata )
 	SetPoseParameter( "armextensionpose", fPos );
 	StudioFrameAdvance();
 }
+#endif // TE120
 //TE120--
+
 //-----------------------------------------------------------------------------
 // Purpose: Helper in case we have to async load the sequence
 // Input  : nSequence -
@@ -2444,12 +2460,16 @@ BEGIN_DATADESC( CPhysicsProp )
 	DEFINE_INPUTFUNC( FIELD_VOID, "Sleep", InputSleep ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "DisableFloating", InputDisableFloating ),
 //TE120--
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_VOID, "ConvertToDebris", InputConvertToDebris ),
 	DEFINE_INPUTFUNC( FIELD_VOID, "ToggleGlow", InputToggleGlow ),
+#endif // TE120
 //TE120--
 
 	DEFINE_FIELD( m_bAwake, FIELD_BOOLEAN ),
+#ifdef TE120
 	DEFINE_FIELD( m_bEnableGlow, FIELD_BOOLEAN ),//TE120
+#endif // TE120
 
 	DEFINE_KEYFIELD( m_massScale, FIELD_FLOAT, "massscale" ),
 	DEFINE_KEYFIELD( m_inertiaScale, FIELD_FLOAT, "inertiascale" ),
@@ -2459,7 +2479,9 @@ BEGIN_DATADESC( CPhysicsProp )
 	DEFINE_KEYFIELD( m_damageToEnableMotion, FIELD_INTEGER, "damagetoenablemotion" ),
 	DEFINE_KEYFIELD( m_flForceToEnableMotion, FIELD_FLOAT, "forcetoenablemotion" ),
 	DEFINE_OUTPUT( m_OnAwakened, "OnAwakened" ),
+#ifdef TE120
 	DEFINE_OUTPUT( m_OnSleep, "OnSleep" ),//TE120
+#endif // TE120
 	DEFINE_OUTPUT( m_MotionEnabled, "OnMotionEnabled" ),
 	DEFINE_OUTPUT( m_OnPhysGunPickup, "OnPhysGunPickup" ),
 	DEFINE_OUTPUT( m_OnPhysGunOnlyPickup, "OnPhysGunOnlyPickup" ),
@@ -2468,7 +2490,9 @@ BEGIN_DATADESC( CPhysicsProp )
 	DEFINE_OUTPUT( m_OnPlayerUse, "OnPlayerUse" ),
 	DEFINE_OUTPUT( m_OnPlayerPickup, "OnPlayerPickup" ),
 	DEFINE_OUTPUT( m_OnOutOfWorld, "OnOutOfWorld" ),
+#ifdef TE120
 	DEFINE_OUTPUT( m_OnPlayerThrow, "OnPlayerThrow" ),//TE120
+#endif // TE120
 
 	DEFINE_FIELD( m_bThrownByPlayer, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_bFirstCollisionAfterLaunch, FIELD_BOOLEAN ),
@@ -2479,7 +2503,9 @@ END_DATADESC()
 
 IMPLEMENT_SERVERCLASS_ST( CPhysicsProp, DT_PhysicsProp )
 	SendPropBool( SENDINFO( m_bAwake ) ),
+#ifdef TE120
 	SendPropBool( SENDINFO(m_bEnableGlow) ),//TE120
+#endif // TE120
 END_SEND_TABLE()
 
 // external function to tell if this entity is a gib physics prop
@@ -2499,8 +2525,9 @@ CPhysicsProp::~CPhysicsProp()
 	{
 		g_ActiveGibCount--;
 	}
-
+#ifdef TE120
 	m_bEnableGlow = false;//TE120
+#endif // TE120
 }
 
 bool CPhysicsProp::IsGib()
@@ -2533,13 +2560,23 @@ void CPhysicsProp::Spawn( )
 	{
 		SetClassname( "prop_physics" );
 	}
-//TE120--
+
 	if ( HasSpawnFlags( SF_PHYSPROP_DEBRIS ) || HasInteraction( PROPINTER_PHYSGUN_CREATE_FLARE ) )
 	{
-		// SetCollisionGroup( HasSpawnFlags( SF_PHYSPROP_FORCE_TOUCH_TRIGGERS ) ? COLLISION_GROUP_DEBRIS_TRIGGER : COLLISION_GROUP_DEBRIS );
-		SetCollisionGroup( HasSpawnFlags( SF_PHYSPROP_FORCE_TOUCH_TRIGGERS ) ? COLLISION_GROUP_PASSABLE_DOOR : COLLISION_GROUP_DEBRIS );
-	}
 //TE120--
+#ifdef TE120
+		SetCollisionGroup( HasSpawnFlags( SF_PHYSPROP_FORCE_TOUCH_TRIGGERS ) ? COLLISION_GROUP_PASSABLE_DOOR : COLLISION_GROUP_DEBRIS );
+#else
+		SetCollisionGroup( HasSpawnFlags( SF_PHYSPROP_FORCE_TOUCH_TRIGGERS ) ? COLLISION_GROUP_DEBRIS_TRIGGER : COLLISION_GROUP_DEBRIS );
+#endif	
+//TE120--
+	}
+
+	if (HasSpawnFlags(SF_PHYSPROP_PUSHAWAY))
+	{
+		SetCollisionGroup(COLLISION_GROUP_PUSHAWAY);
+	}
+
 	if ( HasSpawnFlags( SF_PHYSPROP_NO_ROTORWASH_PUSH ) )
 	{
 		AddEFlags( EFL_NO_ROTORWASH_PUSH );
@@ -2761,7 +2798,9 @@ void CPhysicsProp::EnableMotion( void )
 	}
 	CheckRemoveRagdolls();
 }
+
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -2780,6 +2819,7 @@ void CPhysicsProp::InputToggleGlow( inputdata_t &inputdata )
 {
 	m_bEnableGlow = !m_bEnableGlow;
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------
@@ -2792,7 +2832,11 @@ void CPhysicsProp::OnPhysGunPickup( CBasePlayer *pPhysGunUser, PhysGunPickup_t r
 	IPhysicsObject *pPhysicsObject = VPhysicsGetObject();
 	if ( pPhysicsObject && !pPhysicsObject->IsMoveable() )
 	{
+#ifdef TE120
 		if ( !HasSpawnFlags( SF_PHYSPROP_ENABLE_ON_PHYSCANNON ) || m_explodeRadius == 1337 )//TE120
+#else
+		if ( !HasSpawnFlags( SF_PHYSPROP_ENABLE_ON_PHYSCANNON ) )
+#endif // TE120
 			return;
 
 		EnableMotion();
@@ -2841,17 +2885,23 @@ void CPhysicsProp::OnPhysGunDrop( CBasePlayer *pPhysGunUser, PhysGunDrop_t Reaso
 			float angDrag = 0.0f;
 			VPhysicsGetObject()->SetDragCoefficient( NULL, &angDrag );
 		}
+		
 //TE120--
+#ifdef TE120
 		if (VPhysicsGetObject())
-			PhysSetGameFlags( VPhysicsGetObject(), FVPHYSICS_WAS_THROWN );
+#endif // TE120
 //TE120--
+			PhysSetGameFlags( VPhysicsGetObject(), FVPHYSICS_WAS_THROWN );
+
 		m_bFirstCollisionAfterLaunch = true;
 	}
 	else if ( Reason == THROWN_BY_PLAYER )
 	{
 		// Remember the player threw us for NPC response purposes
 		m_bThrownByPlayer = true;
+#ifdef TE120
 		m_OnPlayerThrow.FireOutput( pPhysGunUser, this );//TE120
+#endif // TE120
 	}
 
 	m_OnPhysGunDrop.FireOutput( pPhysGunUser, this );
@@ -2926,7 +2976,15 @@ int CPhysicsProp::ObjectCaps()
 {
 	int caps = BaseClass::ObjectCaps() | FCAP_WCEDIT_POSITION;
 
+#ifdef TE120
 	if ( HasSpawnFlags( SF_PHYSPROP_ENABLE_PICKUP_OUTPUT ) && CBasePlayer::CanPickupObject( this, 35, 208 ) )//TE120
+#else
+	if ( HasSpawnFlags( SF_PHYSPROP_ENABLE_PICKUP_OUTPUT ) )
+	{
+		caps |= FCAP_IMPULSE_USE;
+	}
+	else if ( CBasePlayer::CanPickupObject( this, 35, 128 ) )
+#endif // TE120
 	{
 		caps |= FCAP_IMPULSE_USE;
 
@@ -2983,6 +3041,7 @@ void CPhysicsProp::VPhysicsUpdate( IPhysicsObject *pPhysics )
 		}
 	}
 //TE120--
+#ifdef TE120
 	else
 	{
 		Vector vecVelocity;
@@ -2995,9 +3054,9 @@ void CPhysicsProp::VPhysicsUpdate( IPhysicsObject *pPhysics )
 			m_OnSleep.FireOutput(this, this);
 			AddSpawnFlags( SF_PHYSPROP_START_ASLEEP );
 		}
-//TE120--
 	}
-
+#endif // TE120
+//TE120--
 	// If we're asleep, clear the player thrown flag
 	if ( m_bThrownByPlayer && !m_bAwake )
 	{
@@ -3353,6 +3412,17 @@ static CBreakableProp *BreakModelCreate_Prop( CBaseEntity *pOwner, breakmodel_t 
 		}
 		pEntity->Spawn();
 
+		CBaseAnimating* pOwnerAnimating = pOwner->GetBaseAnimating();
+		if (pOwnerAnimating)
+		{
+			const float flScale = pOwnerAnimating->GetModelScale();
+			if (!CloseEnough(flScale, 1.0f))
+			{
+				pEntity->SetModelScale(flScale);
+				UTIL_CreateScaledPhysObject(pEntity, flScale);
+			}
+		}
+
 		// If we're burning, break into burning pieces
 		CBaseAnimating *pAnimating = dynamic_cast<CBreakableProp *>(pOwner);
 		if ( pAnimating && pAnimating->IsOnFire() )
@@ -3531,7 +3601,11 @@ int PropBreakablePrecacheAll( string_t modelName )
 bool PropBreakableCapEdictsOnCreateAll(int modelindex, IPhysicsObject *pPhysics, const breakablepropparams_t &params, CBaseEntity *pEntity, int iPrecomputedBreakableCount = -1 )
 {
 	// @Note (toml 10-07-03): this is stop-gap to prevent this function from crashing the engine
+#ifdef TE120	
 	const int BREATHING_ROOM = 16;//TE120
+#else
+	const int BREATHING_ROOM = 64;
+#endif // TE120
 
 	CUtlVector<breakmodel_t> list;
 	BreakModelList( list, modelindex, params.defBurstScale, params.defCollisionGroup );
@@ -5499,39 +5573,43 @@ void CPropDoorRotating::InputSetRotationDistance( inputdata_t &inputdata )
 	CalculateDoorVolume( GetLocalAngles(), m_angRotationOpenBack, &m_vecBackBoundsMin, &m_vecBackBoundsMax );
 }
 
-// Debug sphere
+//-----------------------------------------------------------------------------
+// A prop that uses an effcient sphere for collision
+//-----------------------------------------------------------------------------
 class CPhysSphere : public CPhysicsProp
 {
-	DECLARE_CLASS( CPhysSphere, CPhysicsProp );
+	DECLARE_CLASS(CPhysSphere, CPhysicsProp);
 public:
-	virtual bool OverridePropdata() { return true; }
+	float m_fRadius;
 	bool CreateVPhysics()
 	{
-		SetSolid( SOLID_BBOX );
-		SetCollisionBounds( -Vector(12,12,12), Vector(12,12,12) );
+		SetSolid(SOLID_BBOX);
+		SetCollisionBounds(-Vector(m_fRadius), Vector(m_fRadius));
 		objectparams_t params = g_PhysDefaultObjectParams;
 		params.pGameData = static_cast<void *>(this);
-		IPhysicsObject *pPhysicsObject = physenv->CreateSphereObject( 12, 0, GetAbsOrigin(), GetAbsAngles(), &params, false );
-		if ( pPhysicsObject )
+		IPhysicsObject *pPhysicsObject = physenv->CreateSphereObject(m_fRadius, GetModelPtr()->GetRenderHdr()->textureindex, GetAbsOrigin(), GetAbsAngles(), &params, false);
+		if (pPhysicsObject)
 		{
-			VPhysicsSetObject( pPhysicsObject );
-			SetMoveType( MOVETYPE_VPHYSICS );
+			VPhysicsSetObject(pPhysicsObject);
+			SetMoveType(MOVETYPE_VPHYSICS);
 			pPhysicsObject->Wake();
 		}
-
 		return true;
 	}
+	DECLARE_DATADESC();
 };
+LINK_ENTITY_TO_CLASS(prop_sphere, CPhysSphere);
+BEGIN_DATADESC(CPhysSphere)
+	DEFINE_KEYFIELD(m_fRadius, FIELD_FLOAT, "radius"),
+END_DATADESC()
 
+//-----------------------------------------------------------------------------
 void CPropDoorRotating::InputSetSpeed(inputdata_t &inputdata)
 {
 	AssertMsg1(inputdata.value.Float() > 0.0f, "InputSetSpeed on %s called with negative parameter!", GetDebugName() );
 	m_flSpeed = inputdata.value.Float();
 	DoorResume();
 }
-
-LINK_ENTITY_TO_CLASS( prop_sphere, CPhysSphere );
-
 
 // ------------------------------------------------------------------------------------------ //
 // Special version of func_physbox.
@@ -6118,6 +6196,7 @@ bool UTIL_CreateScaledPhysObject( CBaseAnimating *pInstance, float flScale )
 	// Scale our mass up as well
 	tmpSolid.params.mass *= flScale;
 	tmpSolid.params.volume = physcollision->CollideVolume( pNewCollide );
+	tmpSolid.massCenterOverride *= flScale;
 
 	// Get our surface prop info
 	int surfaceProp = -1;

@@ -43,16 +43,30 @@ extern CUtlMemoryPool g_EntityListPool;
 
 #define SF_DECAL_NOTINDEATHMATCH		2048
 
+#ifdef TE120
 class CDecal : public CServerOnlyPointEntity//TE120
 {
 public:
 	DECLARE_CLASS( CDecal, CServerOnlyPointEntity );//TE120
+#else
+class CDecal : public CPointEntity
+{
+public:
+	DECLARE_CLASS( CDecal, CPointEntity );
+#endif // TE120
 
 	void	Spawn( void );
 	bool	KeyValue( const char *szKeyName, const char *szValue );
 
 	// Need to apply static decals here to get them into the signon buffer for the server appropriately
 	virtual void Activate();
+
+#ifndef TE120
+	void	TriggerDecal( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	// Input handlers.
+	void	InputActivate( inputdata_t &inputdata );
+#endif // TE120
 
 	DECLARE_DATADESC();
 
@@ -72,6 +86,11 @@ BEGIN_DATADESC( CDecal )
 
 	// Function pointers
 	DEFINE_FUNCTION( StaticDecal ),
+#ifndef TE120
+	DEFINE_FUNCTION( TriggerDecal ),
+
+	DEFINE_INPUTFUNC( FIELD_VOID, "Activate", InputActivate ),
+#endif // TE120
 
 END_DATADESC()
 
@@ -91,8 +110,50 @@ void CDecal::Spawn( void )
 void CDecal::Activate()
 {
 	BaseClass::Activate();
+
+#ifndef TE120
+	if ( !GetEntityName() )
+	{
+#endif // TE120
 	StaticDecal();
+#ifndef TE120
+	}
+	else
+	{
+		// if there IS a targetname, the decal sprays itself on when it is triggered.
+		SetThink ( &CDecal::SUB_DoNothing );
+		SetUse(&CDecal::TriggerDecal);
+	}
+#endif // TE120
 }
+
+#ifndef TE120
+void CDecal::TriggerDecal ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	// this is set up as a USE function for info_decals that have targetnames, so that the
+	// decal doesn't get applied until it is fired. (usually by a scripted sequence)
+	trace_t		trace;
+	int			entityIndex;
+
+	UTIL_TraceLine( GetAbsOrigin() - Vector(5,5,5), GetAbsOrigin() + Vector(5,5,5), MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &trace );
+
+	entityIndex = trace.m_pEnt ? trace.m_pEnt->entindex() : 0;
+
+	CBroadcastRecipientFilter filter;
+
+	te->BSPDecal( filter, 0.0, 
+		&GetAbsOrigin(), entityIndex, m_nTexture );
+
+	SetThink( &CDecal::SUB_Remove );
+	SetNextThink( gpGlobals->curtime + 0.1f );
+}
+
+
+void CDecal::InputActivate( inputdata_t &inputdata )
+{
+	TriggerDecal( inputdata.pActivator, inputdata.pCaller, USE_ON, 0 );
+}
+#endif // TE120
 
 void CDecal::StaticDecal( void )
 {
@@ -195,16 +256,30 @@ bool CDecal::KeyValue( const char *szKeyName, const char *szValue )
 //-----------------------------------------------------------------------------
 // Purpose: Projects a decal against a prop
 //-----------------------------------------------------------------------------
+#ifdef TE120
 class CProjectedDecal : public CServerOnlyPointEntity//TE120
 {
 public:
 	DECLARE_CLASS( CProjectedDecal, CServerOnlyPointEntity );//TE120
+#else
+class CProjectedDecal : public CPointEntity
+{
+public:
+	DECLARE_CLASS( CProjectedDecal, CPointEntity );
+#endif // TE120
 
 	void	Spawn( void );
 	bool	KeyValue( const char *szKeyName, const char *szValue );
 
 	// Need to apply static decals here to get them into the signon buffer for the server appropriately
 	virtual void Activate();
+
+#ifndef TE120
+	void	TriggerDecal( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value );
+
+	// Input handlers.
+	void	InputActivate( inputdata_t &inputdata );
+#endif // TE120
 
 	DECLARE_DATADESC();
 
@@ -226,7 +301,11 @@ BEGIN_DATADESC( CProjectedDecal )
 
 	// Function pointers
 	DEFINE_FUNCTION( StaticDecal ),
+#ifndef TE120
+	DEFINE_FUNCTION( TriggerDecal ),
 
+	DEFINE_INPUTFUNC( FIELD_VOID, "Activate", InputActivate ),
+#endif // TE120
 END_DATADESC()
 
 LINK_ENTITY_TO_CLASS( info_projecteddecal, CProjectedDecal );
@@ -254,14 +333,36 @@ void CProjectedDecal::Activate()
 	{
 		// if there IS a targetname, the decal sprays itself on when it is triggered.
 		SetThink ( &CProjectedDecal::SUB_DoNothing );
+#ifndef TE120
+		SetUse(&CProjectedDecal::TriggerDecal);
+#endif // TE120
 	}
 }
+
+#ifndef TE120
+void CProjectedDecal::InputActivate( inputdata_t &inputdata )
+{
+	TriggerDecal( inputdata.pActivator, inputdata.pCaller, USE_ON, 0 );
+}
+#endif // TE120
 
 void CProjectedDecal::ProjectDecal( CRecipientFilter& filter )
 {
 	te->ProjectDecal( filter, 0.0,
 		&GetAbsOrigin(), &GetAbsAngles(), m_flDistance, m_nTexture );
 }
+
+#ifndef TE120
+void CProjectedDecal::TriggerDecal ( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
+{
+	CBroadcastRecipientFilter filter;
+
+	ProjectDecal( filter );
+
+	SetThink( &CProjectedDecal::SUB_Remove );
+	SetNextThink( gpGlobals->curtime + 0.1f );
+}
+#endif // TE120
 
 void CProjectedDecal::StaticDecal( void )
 {

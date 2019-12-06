@@ -28,7 +28,7 @@ class CKeyBoardEditorPage : public EditablePanel
 
 public:
 	CKeyBoardEditorPage( Panel *parent, Panel *panelToEdit, KeyBindingContextHandle_t handle );
-	~CKeyBoardEditorPage();
+	virtual ~CKeyBoardEditorPage();
 
 	void	SetKeybindingsSaveFile( char const *filename, char const *pathID = 0 );
 
@@ -93,6 +93,7 @@ class CKeyBoardEditorSheet : public PropertySheet
 
 public:
 	CKeyBoardEditorSheet( Panel *parent, Panel *panelToEdit, KeyBindingContextHandle_t handle );
+	~CKeyBoardEditorSheet() {}
 
 	void	SetKeybindingsSaveFile( char const *filename, char const *pathID = 0 );
 
@@ -119,6 +120,7 @@ class CKeyBoardEditorDialog : public Frame
 
 public:
 	CKeyBoardEditorDialog( Panel *parent, Panel *panelToEdit, KeyBindingContextHandle_t handle );
+	virtual ~CKeyBoardEditorDialog() {}
 
 	void			SetKeybindingsSaveFile( char const *filename, char const *pathID = 0 );
 

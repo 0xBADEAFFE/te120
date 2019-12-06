@@ -569,7 +569,7 @@ void bf_write::WriteBitCoordMP( const float f, bool bIntegral, bool bLowPrecisio
 	VPROF( "bf_write::WriteBitCoordMP" );
 #endif
 	int		signbit = (f <= -( bLowPrecision ? COORD_RESOLUTION_LOWPRECISION : COORD_RESOLUTION ));
-	int		intval = (int)abs(f);
+	int		intval = (int)fabsf(f);
 	int		fractval = bLowPrecision ? 
 		( abs((int)(f*COORD_DENOMINATOR_LOWPRECISION)) & (COORD_DENOMINATOR_LOWPRECISION-1) ) :
 		( abs((int)(f*COORD_DENOMINATOR)) & (COORD_DENOMINATOR-1) );
@@ -622,7 +622,7 @@ void bf_write::WriteBitCoord (const float f)
 	VPROF( "bf_write::WriteBitCoord" );
 #endif
 	int		signbit = (f <= -COORD_RESOLUTION);
-	int		intval = (int)abs(f);
+	int		intval = (int)fabs(f);
 	int		fractval = abs((int)(f*COORD_DENOMINATOR)) & (COORD_DENOMINATOR-1);
 
 
@@ -1066,7 +1066,7 @@ int32 bf_read::ReadSignedVarInt32()
 
 int64 bf_read::ReadSignedVarInt64()
 {
-	uint32 value = ReadVarInt64();
+	uint64 value = ReadVarInt64();
 	return bitbuf::ZigZagDecode64( value );
 }
 

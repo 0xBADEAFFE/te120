@@ -25,7 +25,8 @@
 static ConVar cl_playerspraydisable( "cl_playerspraydisable", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE, "Disable player sprays." );
 
 //TE120--
-#if 0
+#if !defined (_XBOX) && !defined (TE120)
+//TE120--
 CLIENTEFFECT_REGISTER_BEGIN( PrecachePlayerDecal )
 CLIENTEFFECT_MATERIAL( "decals/playerlogo01" )
 #if !defined(HL2_DLL) || defined(HL2MP)
@@ -105,7 +106,6 @@ CLIENTEFFECT_MATERIAL( "decals/playerlogo64" )
 #endif
 CLIENTEFFECT_REGISTER_END()
 #endif
-//TE120--
 
 //-----------------------------------------------------------------------------
 // Purpose: Player Decal TE

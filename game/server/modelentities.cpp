@@ -8,7 +8,9 @@
 #include "entityoutput.h"
 #include "ndebugoverlay.h"
 #include "modelentities.h"
+#ifdef TE120
 #include "tier0/vprof.h"
+#endif // TE120
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -364,6 +366,7 @@ bool CTriggerBrush::PassesInputFilter( CBaseEntity *pOther, int filter )
 }
 
 //TE120--
+#ifdef TE120
 #define DT_BRUSH_GLOW 0.01f
 
 LINK_ENTITY_TO_CLASS( func_brushglow, CFuncBrushGlow );
@@ -544,4 +547,5 @@ void CFuncBrushGlow::CheckIlluminated()
 		}
 	}
 }
+#endif // TE120
 //TE120--

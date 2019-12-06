@@ -562,11 +562,11 @@ Vector C_BaseFlex::SetViewTarget( CStudioHdr *pStudioHdr )
 		m_iEyeUpdown = FindFlexController( "eyes_updown" );
 		m_iEyeRightleft = FindFlexController( "eyes_rightleft" );
 
-		if ( m_iEyeUpdown != -1 )
+		if ( m_iEyeUpdown != LocalFlexController_t(-1) )
 		{
 			pStudioHdr->pFlexcontroller( m_iEyeUpdown )->localToGlobal = AddGlobalFlexController( "eyes_updown" );
 		}
-		if ( m_iEyeRightleft != -1 )
+		if ( m_iEyeRightleft != LocalFlexController_t(-1) )
 		{
 			pStudioHdr->pFlexcontroller( m_iEyeRightleft )->localToGlobal = AddGlobalFlexController( "eyes_rightleft" );
 		}
@@ -594,13 +594,13 @@ Vector C_BaseFlex::SetViewTarget( CStudioHdr *pStudioHdr )
 		// calculate animated eye deflection
 		Vector eyeDeflect;
 		QAngle eyeAng( 0, 0, 0 );
-		if ( m_iEyeUpdown != -1 )
+		if ( m_iEyeUpdown != LocalFlexController_t(-1) )
 		{
 			mstudioflexcontroller_t *pflex = pStudioHdr->pFlexcontroller( m_iEyeUpdown );
 			eyeAng.x = g_flexweight[ pflex->localToGlobal ];
 		}
 		
-		if ( m_iEyeRightleft != -1 )
+		if ( m_iEyeRightleft != LocalFlexController_t(-1) )
 		{
 			mstudioflexcontroller_t *pflex = pStudioHdr->pFlexcontroller( m_iEyeRightleft );
 			eyeAng.y = g_flexweight[ pflex->localToGlobal ];
@@ -1062,7 +1062,7 @@ void C_BaseFlex::GetToolRecordingState( KeyValues *msg )
 		mstudioflexcontroller_t *flexupdown = hdr->pFlexcontroller( m_iEyeUpdown );
 		mstudioflexcontroller_t *flexrightleft = hdr->pFlexcontroller( m_iEyeRightleft );
 
-		if ( flexupdown->localToGlobal != -1 && flexrightleft->localToGlobal != -1 )
+		if ( flexupdown->localToGlobal != LocalFlexController_t(-1) && flexrightleft->localToGlobal != LocalFlexController_t(-1) )
 		{
 			float updown = g_flexweight[ flexupdown->localToGlobal ];
 			float rightleft = g_flexweight[ flexrightleft->localToGlobal ];
@@ -1149,7 +1149,7 @@ void C_BaseFlex::SetupWeights( const matrix3x4_t *pBoneToWorld, int nFlexWeightC
 {
 	// hack in an initialization
 	LinkToGlobalFlexControllers( GetModelPtr() );
-	m_iBlink = AddGlobalFlexController( "UH" );
+	//m_iBlink = AddGlobalFlexController( "UH" ); NOTE: Fixing NPC blinking
 
 	if ( SetupGlobalWeights( pBoneToWorld, nFlexWeightCount, pFlexWeights, pFlexDelayedWeights ) )
 	{

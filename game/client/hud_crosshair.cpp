@@ -64,8 +64,9 @@ CHudCrosshair::~CHudCrosshair()
 void CHudCrosshair::ApplySchemeSettings( IScheme *scheme )
 {
 	BaseClass::ApplySchemeSettings( scheme );
-
-	m_pCrosshairUse = gHUD.GetIcon("crosshair_use");//TE120
+#ifdef TE120
+	m_pCrosshairUse = gHUD.GetIcon("crosshair_use"); // TE120
+#endif // TE120
 	m_pDefaultCrosshair = gHUD.GetIcon("crosshair_default");
 	SetPaintBackgroundEnabled( false );
 
@@ -295,7 +296,11 @@ void CHudCrosshair::SetCrosshairAngle( const QAngle& angle )
 void CHudCrosshair::SetCrosshair( CHudTexture *texture, const Color& clr )
 {
 	m_pCrosshair = texture;
-	m_clrCrosshair = Color(255, 255, 255, 255);//TE120
+#ifdef TE120
+	m_clrCrosshair = Color(255, 255, 255, 255); // TE120
+#else
+	m_clrCrosshair = clr;
+#endif // TE120
 }
 
 //-----------------------------------------------------------------------------

@@ -2120,7 +2120,7 @@ void CWeaponPhysConcussion::PrimaryAttack( void )
 	pOwner->ViewPunch( QAngle( random->RandomInt( -8, -12 ), random->RandomInt( 1, 2 ), 0 ) );
 
 	// Decrease ammo
-	pOwner->RemoveAmmo( 5, m_iPrimaryAmmoType );
+	//pOwner->RemoveAmmo( 5, m_iPrimaryAmmoType );
 
 	gamestats->Event_WeaponFired( pOwner, true, GetClassname() );
 

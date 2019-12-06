@@ -570,7 +570,7 @@ void C_BaseExplosionEffect::CreateDebris( void )
 	CSmartPtr<CTrailParticles> pSparkEmitter	= CTrailParticles::Create( "CreateDebris 1" );
 	if ( pSparkEmitter == NULL )
 	{
-		assert(0);
+		Assert(0);
 		return;
 	}
 
@@ -747,7 +747,7 @@ float C_BaseExplosionEffect::Probe( const Vector &origin, Vector *vecDirection, 
 	debugoverlay->AddLineOverlay( m_vecOrigin, endpos, (255*(1.0f-tr.fraction)), (255*tr.fraction), 0, false, 3 );
 #endif
 
-	assert(( 1.0f - tr.fraction ) >= 0.0f );
+	Assert(( 1.0f - tr.fraction ) >= 0.0f );
 
 	//Return the impacted proportion of the probe
 	return (1.0f-tr.fraction);

@@ -25,11 +25,15 @@ BEGIN_DATADESC( CLight )
 
 	// Fuctions
 	DEFINE_FUNCTION( FadeThink ),
+#ifdef TE120
 	DEFINE_FUNCTION( ToggleBugThink ),//TE120
+#endif // TE120
 
 	// Inputs
 	DEFINE_INPUTFUNC( FIELD_STRING, "SetPattern", InputSetPattern ),
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_FLOAT,	"SetLightValue", InputSetLightValue ),//TE120
+#endif // TE120
 	DEFINE_INPUTFUNC( FIELD_STRING, "FadeToPattern", InputFadeToPattern ),
 	DEFINE_INPUTFUNC( FIELD_VOID,	"Toggle", InputToggle ),
 	DEFINE_INPUTFUNC( FIELD_VOID,	"TurnOn", InputTurnOn ),
@@ -85,6 +89,7 @@ void CLight::Spawn( void )
 }
 
 //TE120--
+#ifdef TE120
 void CLight::Activate( void )
 {
 	if ( !GetEntityName() )
@@ -139,6 +144,7 @@ void CLight::ToggleBugThink( void )
 		TurnOff();
 	}
 }
+#endif // TE120
 //TE120--
 
 void CLight::Use( CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value )
@@ -234,6 +240,7 @@ void CLight::InputSetPattern( inputdata_t &inputdata )
 }
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Input handler for fading a light
 //-----------------------------------------------------------------------------
@@ -329,6 +336,7 @@ void CLight::InputSetLightValue( inputdata_t &inputdata )
 		break;
 	}
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------

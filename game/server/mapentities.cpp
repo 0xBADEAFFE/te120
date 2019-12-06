@@ -251,6 +251,8 @@ void SpawnAllEntities( int nEntities, HierarchicalSpawn_t *pSpawnList, bool bAct
 	{
 		VPROF( "MapEntity_ParseAllEntities_Spawn");
 		CBaseEntity *pEntity = pSpawnList[nEntity].m_pEntity;
+		if (!pEntity)
+			return;
 
 		if ( pSpawnList[nEntity].m_pDeferredParent )
 		{

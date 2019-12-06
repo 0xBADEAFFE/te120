@@ -11,6 +11,7 @@
 *.ilk
 *.lastbuildstate
 vc100.pdb
+vc120.pdb
 ipch
 *.sdf
 *.opensdf
@@ -20,6 +21,7 @@ ipch
 *.sln
 [Dd]ebug*/
 [Rr]elease*/
+/.vs
 
 # OSX/Linux build products
 *.DS_Store

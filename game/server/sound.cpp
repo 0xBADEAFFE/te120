@@ -408,8 +408,10 @@ void CAmbientGeneric::InputFadeOut( inputdata_t &inputdata )
 	// cancel any fade in that might be happening
 	m_dpv.fadein = 0;
 //TE120--
+#ifdef TE120
 	if (m_dpv.vol > 0)
 	{
+#endif // TE120
 		m_dpv.fadeout = inputdata.value.Float();
 
 		if (m_dpv.fadeout > 100)
@@ -420,7 +422,9 @@ void CAmbientGeneric::InputFadeOut( inputdata_t &inputdata )
 
 		if (m_dpv.fadeout > 0)
 			m_dpv.fadeout = ( 100 << 8 ) / ( m_dpv.fadeout * AMBIENT_GENERIC_UPDATE_RATE );
+#ifdef TE120
 	}
+#endif // TE120
 //TE120--
 
 	SetNextThink( gpGlobals->curtime + 0.1f );
@@ -882,6 +886,10 @@ void CAmbientGeneric::InputStopSound( inputdata_t &inputdata )
 	}
 }
 
+/* BM: Function edited according to https://developer.valvesoftware.com/wiki/Ambient_generic:_stop_and_toggle_fix
+	This moves the job of setting m_fActive to the very top of the chain, denying any ambient_generic
+	function wriggle room to escape it! This opens up the use of the volume and pitch inputs, and
+	allows you to safely start a sound with a map.*/
 void CAmbientGeneric::SendSound( SoundFlags_t flags)
 {
 	char *szSoundFile = (char *)STRING( m_iszSound );
@@ -898,6 +906,11 @@ void CAmbientGeneric::SendSound( SoundFlags_t flags)
 		{
 			UTIL_EmitAmbientSound(pSoundSource->GetSoundSourceIndex(), pSoundSource->GetAbsOrigin(), szSoundFile,
 				(m_dpv.vol * 0.01), m_iSoundLevel, flags, m_dpv.pitch);
+
+			/* Only mark active if this is a looping sound. If not looping, each
+				trigger will cause the sound to play. If the sound is still
+				playing from a previous trigger press, it will be shut off
+				and then restarted. */
 			if (m_fLooping)
 				m_fActive = true;
 		}

@@ -548,7 +548,7 @@ inline bool CSteamAPIContext::Init()
 		return false;
 	}
 
-	/* This is causing a crash
+#ifndef TE120 // NOTE: This is causing a crash
 	m_pSteamMusicRemote = SteamClient()->GetISteamMusicRemote( hSteamUser, hSteamPipe, STEAMMUSICREMOTE_INTERFACE_VERSION );
 	if ( !m_pSteamMusicRemote )
 	{
@@ -560,7 +560,7 @@ inline bool CSteamAPIContext::Init()
 	{
 		return false;
 	}
-	*/
+#endif // !TE120
 
 #ifdef _PS3
 	m_pSteamPS3OverlayRender = SteamClient()->GetISteamPS3OverlayRender();

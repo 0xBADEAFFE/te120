@@ -11,7 +11,9 @@
 #include "ammodef.h"
 #include "eventlist.h"
 #include "npcevent.h"
+#ifdef TE120
 #include "hl2_player.h"//TE120
+#endif // TE120
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -591,6 +593,7 @@ public:
 LINK_ENTITY_TO_CLASS( item_ammo_ar2_altfire, CItem_AR2AltFireRound );
 
 //TE120--
+#ifdef TE120
 // ========================================================================
 //	>> CItem_GC_Energy
 // ========================================================================
@@ -637,6 +640,7 @@ public:
 	}
 };
 LINK_ENTITY_TO_CLASS( item_gc_energy, CItem_GC_Energy );
+#endif // TE120
 //TE120--
 
 // ==================================================================
@@ -656,7 +660,9 @@ enum
 	AMMOCRATE_CROSSBOW,
 	AMMOCRATE_AR2_ALTFIRE,
 	AMMOCRATE_SMG_ALTFIRE,
-	AMMOCRATE_GC_ENERGY,//TE120
+#ifdef TE120
+	AMMOCRATE_GC_ENERGY, // TE120
+#endif // TE120
 	NUM_AMMO_CRATE_TYPES,
 };
 
@@ -744,7 +750,9 @@ const char *CItem_AmmoCrate::m_lpzModelNames[NUM_AMMO_CRATE_TYPES] =
 	//FIXME: This model is incorrect!
 	"models/items/ammocrate_ar2.mdl",		// Combine Ball
 	"models/items/ammocrate_smg2.mdl",	    // smg grenade
-	"models/items/357ammo.mdl",				// Gravity Concussion //TE120
+#ifdef TE120
+	"models/items/357ammo.mdl",				// Gravity Concussion // TE120
+#endif // TE120
 };
 
 // Ammo type names
@@ -760,7 +768,9 @@ const char *CItem_AmmoCrate::m_lpzAmmoNames[NUM_AMMO_CRATE_TYPES] =
 	"XBowBolt",
 	"AR2AltFire",
 	"SMG1_Grenade",
-	"GC_Energy",//TE120
+#ifdef TE120
+	"GC_Energy", // TE120
+#endif // TE120
 };
 
 // Ammo amount given per +use
@@ -775,8 +785,12 @@ int CItem_AmmoCrate::m_nAmmoAmounts[NUM_AMMO_CRATE_TYPES] =
 	50,		// 357
 	50,		// Crossbow
 	3,		// AR2 alt-fire
+#ifdef TE120
 	5,		// SMG Grenade //TE120
 	50,		// GC Energy //TE120
+#else
+	5,
+#endif // TE120
 };
 
 const char *CItem_AmmoCrate::m_pGiveWeapon[NUM_AMMO_CRATE_TYPES] =
@@ -791,7 +805,9 @@ const char *CItem_AmmoCrate::m_pGiveWeapon[NUM_AMMO_CRATE_TYPES] =
 	NULL,		// Crossbow
 	NULL,		// AR2 alt-fire
 	NULL,		// SMG alt-fire
-	NULL,		// GC Energy //TE120
+#ifdef TE120
+	NULL,		// GC Energy // TE120
+#endif // TE120
 };
 
 #define	AMMO_CRATE_CLOSE_DELAY	1.5f

@@ -3222,7 +3222,10 @@ void CAI_BaseNPC::UpdateEfficiency( bool bInPVS )
 				}
 			}
 
-			iSound = pCurrentSound->NextSound();
+			if (pCurrentSound)
+				iSound = pCurrentSound->NextSound();
+			else
+				break;
 		}
 	}
 
@@ -3409,7 +3412,10 @@ void CAI_BaseNPC::UpdateSleepState( bool bInPVS )
 							break;
 						}
 
-						iSound = pCurrentSound->NextSound();
+						if (pCurrentSound)
+							iSound = pCurrentSound->NextSound();
+						else
+							break;
 					}
 				}
 			}
@@ -4618,7 +4624,11 @@ void CAI_BaseNPC::CheckFlinches( void )
 
 		// Otherwise, do nothing. The heavy damage will interrupt our schedule and we'll flinch.
 	}
-	else if ( HasCondition( COND_LIGHT_DAMAGE ) && !m_hCine )//TE120
+#ifdef TE120
+	else if ( HasCondition( COND_LIGHT_DAMAGE ) && !m_hCine )// TE120
+#else
+	else if ( HasCondition( COND_LIGHT_DAMAGE ) )
+#endif // TE120
 	{
 		// If we have taken light damage play gesture flinches
 		PlayFlinchGesture();
@@ -5339,7 +5349,11 @@ bool CAI_BaseNPC::WeaponLOSCondition(const Vector &ownerPos, const Vector &targe
 			}
 		}
 	}
+#ifdef TE120
+	return bHaveLOS && !IsHiddenByFog(targetPos);
+#else
 	return bHaveLOS;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -5364,6 +5378,8 @@ bool CAI_BaseNPC::InnateWeaponLOSCondition( const Vector &ownerPos, const Vector
 	}
 
 	CBaseEntity	*pHitEntity = tr.m_pEnt;
+	if (!pHitEntity)
+		return false;
 
 	// Translate a hit vehicle into its passenger if found
 	if ( GetEnemy() != NULL )
@@ -10204,8 +10220,10 @@ bool CAI_BaseNPC::ChooseEnemy( void )
 	//
 
 	CBaseEntity *pInitialEnemy = GetEnemy();
+	if (!pInitialEnemy)
+		return false;
 	CBaseEntity *pChosenEnemy  = pInitialEnemy;
-
+	
 	// Use memory bits in case enemy pointer altered outside this function, (e.g., ehandle goes NULL)
 	bool fHadEnemy  	 = ( HasMemory( bits_MEMORY_HAD_ENEMY | bits_MEMORY_HAD_PLAYER ) );
 	bool fEnemyWasPlayer = HasMemory( bits_MEMORY_HAD_PLAYER );
@@ -10398,7 +10416,8 @@ bool CAI_BaseNPC::ShouldFadeOnDeath( void )
 {
 	if ( g_RagdollLVManager.IsLowViolence() )
 	{
-		return true;
+		// Don't mess up the MegaPhyscannon!
+		return (GlobalEntity_GetState("super_phys_gun") != GLOBAL_ON); // 2=GLOBAL_DEAD
 	}
 	else
 	{
@@ -13154,6 +13173,9 @@ const char *CAI_BaseNPC::GetScriptedNPCInteractionSequence( ScriptedNPCInteracti
 //-----------------------------------------------------------------------------
 void CAI_BaseNPC::StartRunningInteraction( CAI_BaseNPC *pOtherNPC, bool bActive )
 {
+	if (!pOtherNPC)
+		return;
+
 	m_hInteractionPartner = pOtherNPC;
 	if ( bActive )
 	{

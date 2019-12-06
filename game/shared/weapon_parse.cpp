@@ -344,7 +344,9 @@ FileWeaponInfo_t::FileWeaponInfo_t()
 	iconAutoaim = 0;
 	iconZoomedCrosshair = 0;
 	iconZoomedAutoaim = 0;
+#ifdef TE120
 	iconCrosshairUse = 0;//TE120
+#endif // TE120
 	bShowUsageHint = false;
 	m_bAllowFlipping = true;
 	m_bBuiltRightHanded = true;

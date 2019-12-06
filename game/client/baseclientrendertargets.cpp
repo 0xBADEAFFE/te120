@@ -11,6 +11,8 @@
 #include "materialsystem/imaterialsystemhardwareconfig.h"	// Hardware config checks
 #include "tier0/icommandline.h"
 
+#include "tier0/memdbgon.h"
+
 ITexture* CBaseClientRenderTargets::CreateWaterReflectionTexture( IMaterialSystem* pMaterialSystem, int iSize )
 {
 	return pMaterialSystem->CreateNamedRenderTargetTextureEx2(

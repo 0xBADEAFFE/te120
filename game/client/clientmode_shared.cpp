@@ -64,7 +64,9 @@ extern ConVar replay_rendersetting_renderglow;
 #include "c_tf_player.h"
 #include "econ_item_description.h"
 #endif
-#include "c_entgloweffect.h"//TE120
+#ifdef TE120
+#include "c_entgloweffect.h" // TE120
+#endif // TE120
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -832,8 +834,10 @@ void ClientModeShared::LevelInit( const char *newmap )
 	CLocalPlayerFilter filter;
 	enginesound->SetPlayerDSP( filter, 0, true );
 
+#ifdef TE120
 	// Enable glow
-	g_pScreenSpaceEffects->EnableScreenSpaceEffect( "ge_entglow" );//TE120
+	g_pScreenSpaceEffects->EnableScreenSpaceEffect( "ge_entglow" ); // TE120
+#endif // TE120
 }
 
 //-----------------------------------------------------------------------------
@@ -858,8 +862,10 @@ void ClientModeShared::LevelShutdown( void )
 	CLocalPlayerFilter filter;
 	enginesound->SetPlayerDSP( filter, 0, true );
 
+#ifdef TE120
 	// Disable glow
-	g_pScreenSpaceEffects->DisableScreenSpaceEffect( "ge_entglow" );//TE120
+	g_pScreenSpaceEffects->DisableScreenSpaceEffect( "ge_entglow" ); // TE120
+#endif // TE120
 }
 
 
@@ -1122,7 +1128,7 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			}
 		}
 
-		if ( team == 0 && GetLocalTeam() > 0 )
+		if ( team == 0 && GetLocalTeam() )
 		{
 			bValidTeam = false;
 		}

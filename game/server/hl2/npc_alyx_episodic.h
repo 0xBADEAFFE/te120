@@ -99,7 +99,6 @@ public:
 	bool	CanBeHitByMeleeAttack( CBaseEntity *pAttacker );
 	int		OnTakeDamage_Alive( const CTakeDamageInfo &info );
 	bool	FCanCheckAttacks();
-	float	GetAttackDamageScale( CBaseEntity *pVictim );
 
 
 	bool	HandleInteraction(int interactionType, void *data, CBaseCombatCharacter* sourceEnt);

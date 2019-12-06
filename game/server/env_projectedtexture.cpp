@@ -27,7 +27,9 @@ public:
 
 	// Always transmit to clients
 	virtual int UpdateTransmitState();
+#ifdef TE120
 	void Spawn( void );//TE120
+#endif // TE120
 	virtual void Activate( void );
 
 	void InputTurnOn( inputdata_t &inputdata );
@@ -38,12 +40,16 @@ public:
 	void InputSetLightOnlyTarget( inputdata_t &inputdata );
 	void InputSetLightWorld( inputdata_t &inputdata );
 	void InputSetEnableShadows( inputdata_t &inputdata );
+#ifdef TE120
 	void InputSetLightColor( inputdata_t &inputdata );//TE120
+#endif // TE120
 	void InputSetSpotlightTexture( inputdata_t &inputdata );
 	void InputSetAmbient( inputdata_t &inputdata );
 
 	void InitialThink( void );
+#ifdef TE120
 	void FlickerThink( void );//TE120
+#endif // TE120
 
 	CNetworkHandle( CBaseEntity, m_hTargetEntity );
 
@@ -56,14 +62,18 @@ private:
 	CNetworkVar( bool, m_bLightWorld );
 	CNetworkVar( bool, m_bCameraSpace );
 	CNetworkVector( m_LinearFloatLightColor );
+#ifdef TE120
 	CNetworkVector( m_LinearFloatLightColorCopy );//TE120
+#endif // TE120
 	CNetworkVar( float, m_flAmbient );
 	CNetworkString( m_SpotlightTextureName, MAX_PATH );
 	CNetworkVar( int, m_nSpotlightTextureFrame );
 	CNetworkVar( float, m_flNearZ );
 	CNetworkVar( float, m_flFarZ );
 	CNetworkVar( int, m_nShadowQuality );
+#ifdef TE120
 	CNetworkVar( bool, m_bFlicker );//TE120
+#endif // TE120
 };
 
 LINK_ENTITY_TO_CLASS( env_projectedtexture, CEnvProjectedTexture );
@@ -78,10 +88,12 @@ BEGIN_DATADESC( CEnvProjectedTexture )
 	DEFINE_KEYFIELD( m_bCameraSpace, FIELD_BOOLEAN, "cameraspace" ),
 	DEFINE_KEYFIELD( m_flAmbient, FIELD_FLOAT, "ambient" ),
 //TE120--
+#ifdef TE120
 	DEFINE_KEYFIELD( m_bFlicker, FIELD_BOOLEAN, "flicker" ),
-	//DEFINE_AUTO_ARRAY_KEYFIELD( m_SpotlightTextureName, FIELD_CHARACTER, "texturename" ),
-	DEFINE_AUTO_ARRAY( m_SpotlightTextureName, FIELD_CHARACTER ),
+#endif // TE120
 //TE120--
+	// DEFINE_AUTO_ARRAY_KEYFIELD( m_SpotlightTextureName, FIELD_CHARACTER, "texturename" ),
+	DEFINE_AUTO_ARRAY( m_SpotlightTextureName, FIELD_CHARACTER ),
 	DEFINE_KEYFIELD( m_nSpotlightTextureFrame, FIELD_INTEGER, "textureframe" ),
 	DEFINE_KEYFIELD( m_flNearZ, FIELD_FLOAT, "nearz" ),
 	DEFINE_KEYFIELD( m_flFarZ, FIELD_FLOAT, "farz" ),
@@ -98,7 +110,9 @@ BEGIN_DATADESC( CEnvProjectedTexture )
 	DEFINE_INPUTFUNC( FIELD_BOOLEAN, "EnableShadows", InputSetEnableShadows ),
 	// this is broken . . need to be able to set color and intensity like light_dynamic
 //	DEFINE_INPUTFUNC( FIELD_COLOR32, "LightColor", InputSetLightColor ),
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_STRING, "LightColor", InputSetLightColor ),//TE120
+#endif // TE120
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "Ambient", InputSetAmbient ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "SpotlightTexture", InputSetSpotlightTexture ),
 	DEFINE_THINKFUNC( InitialThink ),
@@ -231,6 +245,7 @@ void CEnvProjectedTexture::InputSetEnableShadows( inputdata_t &inputdata )
 }
 
 //TE120--
+#ifdef TE120
 void CEnvProjectedTexture::InputSetLightColor( inputdata_t &inputdata )
 {
 	Vector tmp;
@@ -238,6 +253,7 @@ void CEnvProjectedTexture::InputSetLightColor( inputdata_t &inputdata )
 	// DevMsg( "vCLR.x: %f\n", tmp.x );
 	m_LinearFloatLightColor = tmp;
 }
+#endif // TE120
 //TE120--
 
 void CEnvProjectedTexture::InputSetAmbient( inputdata_t &inputdata )
@@ -251,6 +267,7 @@ void CEnvProjectedTexture::InputSetSpotlightTexture( inputdata_t &inputdata )
 }
 
 //TE120--
+#ifdef TE120
 void CEnvProjectedTexture::Spawn( void )
 {
 	if ( GetSpawnFlags() & ENV_PROJECTEDTEXTURE_STARTON )
@@ -286,7 +303,7 @@ void CEnvProjectedTexture::InitialThink( void )
 
 	if ( m_bFlicker )
 	{
-		DevMsg("CEnvProjectedTexture::InitialThink: m_bFlicker..\n");
+		DevMsg("CEnvProjectedTexture::InitialThink: m_bFlicker...\n");
 		m_LinearFloatLightColorCopy = m_LinearFloatLightColor;
 		SetThink( &CEnvProjectedTexture::FlickerThink );
 		SetNextThink( gpGlobals->curtime + 0.05 );
@@ -306,6 +323,25 @@ void CEnvProjectedTexture::FlickerThink( void )
 		SetNextThink( gpGlobals->curtime + 0.05 );
 	}
 }
+#else
+void CEnvProjectedTexture::Activate( void )
+{
+	if ( GetSpawnFlags() & ENV_PROJECTEDTEXTURE_STARTON )
+	{
+		m_bState = true;
+	}
+
+	SetThink( &CEnvProjectedTexture::InitialThink );
+	SetNextThink( gpGlobals->curtime + 0.1f );
+
+	BaseClass::Activate();
+}
+
+void CEnvProjectedTexture::InitialThink( void )
+{
+	m_hTargetEntity = gEntList.FindEntityByName( NULL, m_target );
+}
+#endif // TE120
 //TE120--
 
 int CEnvProjectedTexture::UpdateTransmitState()

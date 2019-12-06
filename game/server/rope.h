@@ -89,15 +89,19 @@ public:
 	void InputSetScrollSpeed( inputdata_t &inputdata );
 	void InputSetForce( inputdata_t &inputdata );
 	void InputBreak( inputdata_t &inputdata );
+#ifdef TE120
 	void InputUpdateRope( inputdata_t &inputdata );//TE120
+#endif // TE120
 
 public:
 
 	bool			Break( void );
 	void			DetachPoint( int iPoint );
 //TE120--
+#ifdef TE120
 	void			SetNameThink();
 	void			CallNameThink();
+#endif // TE120
 //TE120--
 	void			EndpointsChanged();
 
@@ -163,7 +167,9 @@ public:
 	CNetworkVar( int, m_fLockedPoints );
 
 	bool		m_bCreatedFromMapFile; // set to false when creating at runtime
+#ifdef TE120
 	string_t	m_strNameThink;//TE120
+#endif // TE120
 	CNetworkVar( float, m_flScrollSpeed );
 
 private:

@@ -59,13 +59,15 @@ C_FuncReflectiveGlass::~C_FuncReflectiveGlass()
 bool C_FuncReflectiveGlass::ShouldDraw()
 {
 //TE120--
+#ifdef TE120
 	bool bLowEnd = ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() < 80 );
 
 	if ( bLowEnd )
 		return false;
 	else
-		return true;
+#endif // TE120
 //TE120--
+		return true;
 }
 
 
@@ -75,10 +77,12 @@ bool C_FuncReflectiveGlass::ShouldDraw()
 bool IsReflectiveGlassInView( const CViewSetup& view, cplane_t &plane )
 {
 //TE120--
+#ifdef TE120
 	bool bLowEnd = ( g_pMaterialSystemHardwareConfig->GetDXSupportLevel() < 80 );
 
 	if ( bLowEnd )
 		return false;
+#endif // TE120
 //TE120--
 
 	// Early out if no cameras

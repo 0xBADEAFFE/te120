@@ -422,8 +422,8 @@ struct FlashlightState_t
 	{
 		m_bEnableShadows = false;						// Provide reasonable defaults for shadow depth mapping parameters
 		m_bDrawShadowFrustum = false;
-		m_flShadowMapResolution = 1024.0f; 	// 512  | 1024 | 2048 | 4096
-		m_flShadowFilterSize = 1.0f; 				// 3.0f | 1.0f | 0.5f | 0.2f
+		m_flShadowMapResolution = 1024.0f; 				// 512  | 1024 | 2048 | 4096
+		m_flShadowFilterSize = 1.0f;					// 3.0f | 1.0f | 0.5f | 0.2f https://developer.valvesoftware.com/wiki/Env_projectedtexture/fixes#Lowering_the_amount_of_.22grain.22_on_shadows
 		m_flShadowSlopeScaleDepthBias = 16.0f;
 		m_flShadowDepthBias = 0.0005f;
 		m_flShadowJitterSeed = 0.0f;

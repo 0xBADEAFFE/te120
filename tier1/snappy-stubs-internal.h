@@ -36,12 +36,12 @@
 #endif
 
 #include "tier0/platform.h"
+#include "tier0/dbg.h"
 
 // don't use iostream, this make us fail to run under OS X 10.5
 //#include <iostream>
 #include <string>
 
-#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -364,7 +364,7 @@ inline int Bits::Log2Floor(uint32 n) {
       log += shift;
     }
   }
-  assert(value == 1);
+  Assert(value == 1);
   return log;
 }
 

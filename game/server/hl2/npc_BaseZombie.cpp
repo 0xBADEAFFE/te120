@@ -207,8 +207,10 @@ BEGIN_DATADESC( CNPC_BaseZombie )
 	DEFINE_FIELD( m_fIsTorso, FIELD_BOOLEAN ),
 	DEFINE_FIELD( m_fIsHeadless, FIELD_BOOLEAN ),
 //TE120--
+#ifdef TE120
 	DEFINE_FIELD( m_fIsIlluminated, FIELD_BOOLEAN ),
 	DEFINE_KEYFIELD( m_bDisallowHeadcrab, FIELD_BOOLEAN, "PreventHeadcrab" ),
+#endif // TE120
 //TE120--
 	DEFINE_FIELD( m_flNextFlinch, FIELD_TIME ),
 	DEFINE_FIELD( m_bHeadShot, FIELD_BOOLEAN ),
@@ -224,9 +226,11 @@ BEGIN_DATADESC( CNPC_BaseZombie )
 	DEFINE_FIELD( m_hObstructor, FIELD_EHANDLE ),
 	DEFINE_FIELD( m_bIsSlumped, FIELD_BOOLEAN ),
 //TE120--
+#ifdef TE120
 	// Outputs
 	DEFINE_OUTPUT( m_OnIlluminated, "OnIlluminated" ),
 	DEFINE_OUTPUT( m_OnNotIlluminated, "OnNotIlluminated" ),
+#endif // TE120
 //TE120--
 
 END_DATADESC()
@@ -782,11 +786,17 @@ HeadcrabRelease_t CNPC_BaseZombie::ShouldReleaseHeadcrab( const CTakeDamageInfo 
 		if ( info.GetDamageType() & DMG_BULLET )
 		{
 //TE120--
+#ifdef TE120
 			if ( m_bHeadShot || m_bDisallowHeadcrab )
 			{
 				if ( flDamageThreshold > 0.25 || m_bDisallowHeadcrab )
-				{
+#else
+			if( m_bHeadShot ) 
+			{
+				if( flDamageThreshold > 0.25 )
+#endif // TE120
 //TE120--
+				{
 					// Enough force to kill the crab.
 					return RELEASE_RAGDOLL;
 				}
@@ -870,11 +880,13 @@ int CNPC_BaseZombie::OnTakeDamage_Alive( const CTakeDamageInfo &inputInfo )
 		{
 			EmitSound( "E3_Phystown.Slicer" );
 //TE120--
+#ifdef TE120
 			// Fire event for achievement: E120_SLICER
 			IGameEvent *event = gameeventmanager->CreateEvent( "sliced_zombie" );
 			if ( event )
 				gameeventmanager->FireEvent( event );
 				DevMsg("Event: sliced_zombie\n");
+#endif // TE120
 //TE120--
 		}
 
@@ -903,15 +915,18 @@ int CNPC_BaseZombie::OnTakeDamage_Alive( const CTakeDamageInfo &inputInfo )
 				ReleaseHeadcrab( EyePosition(), vecForce, true, false, true );
 
 //TE120--
-				DevMsg("Sliced Headcrab of!\n");
+#ifdef TE120
 // TODO: Verify, never managed to trigger RELEASE_RAGDOLL_SLICED_OFF
 /*
+				DevMsg("Sliced Headcrab of!\n");
+				
 				// Fire event for achievement: E120_SLICER
  				IGameEvent *event = gameeventmanager->CreateEvent( "sliced_zombie" );
  				if ( event )
 					gameeventmanager->FireEvent( event );
 					DevMsg("Event: sliced_zombie\n");
 */
+#endif // TE120
 //TE120--
 			}
 			break;
@@ -1303,8 +1318,10 @@ CBaseEntity *CNPC_BaseZombie::ClawAttack( float flDist, int iDamage, QAngle &qaV
 	{
 		trace_t	tr;
 //TE120--
+#ifdef TE120
 		if ( GetEnemy()->GetSolidFlags() & FSOLID_NOT_SOLID )
 			return NULL;
+#endif // TE120
 //TE120--
 		AI_TraceHull( WorldSpaceCenter(), GetEnemy()->WorldSpaceCenter(), -Vector(8,8,8), Vector(8,8,8), MASK_SOLID_BRUSHONLY, this, COLLISION_GROUP_NONE, &tr );
 
@@ -2106,6 +2123,7 @@ void CNPC_BaseZombie::PrescheduleThink( void )
 	}
 
 //TE120--
+#ifdef TE120
 	// If we're being illuminated by the flashlight send output
 	CBasePlayer *pPlayer = AI_GetSinglePlayer();
 
@@ -2131,8 +2149,9 @@ void CNPC_BaseZombie::PrescheduleThink( void )
 			DevMsg( "I am no longer illuminated!\n" ); //Debug
 		}
 	}
-}
+#endif // TE120
 //TE120--
+}
 
 //---------------------------------------------------------
 //---------------------------------------------------------
@@ -2561,6 +2580,7 @@ void CNPC_BaseZombie::ReleaseHeadcrab( const Vector &vecOrigin, const Vector &ve
 		}
 
 //TE120--
+#ifdef TE120
 		// Duplicate relationship to player
 		CBasePlayer *pPlayer = AI_GetSinglePlayer();
 
@@ -2575,6 +2595,7 @@ void CNPC_BaseZombie::ReleaseHeadcrab( const Vector &vecOrigin, const Vector &ve
 			pCrab->SetName( this->GetEntityName() );
 			DevMsg("Duplicated relationship to player!\n");
 		}
+#endif // TE120
 //TE120--
 
 		CopyRenderColorTo( pCrab );

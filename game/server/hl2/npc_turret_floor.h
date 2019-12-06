@@ -136,7 +136,9 @@ public:
 	bool			CanBeAnEnemyOf( CBaseEntity *pEnemy );
 	bool			IsBeingCarriedByPlayer( void ) { return m_bCarriedByPlayer; }
 	bool			WasJustDroppedByPlayer( void );
+#ifdef TE120
 	bool			AltDropTest();//TE120
+#endif // TE120
 
 	int		BloodColor( void ) { return DONT_BLEED; }
 	float	MaxYawSpeed( void );

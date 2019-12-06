@@ -1868,7 +1868,7 @@ void CTempEnts::MuzzleFlash( const Vector& pos1, const QAngle& angles, int type,
 	
 	default:
 		// There's no supported muzzle flash for the type specified!
-		Assert(0);
+		// Assert(0);
 		break;
 	}
 
@@ -2213,7 +2213,7 @@ void CTempEnts::PlaySound ( C_LocalTempEntity *pTemp, float damp )
 #endif
 	}
 
-	zvel = abs( pTemp->GetVelocity()[2] );
+	zvel = (int)fabsf( pTemp->GetVelocity()[2] );
 		
 	// only play one out of every n
 

@@ -82,7 +82,11 @@ BEGIN_DATADESC( CMaterialModifyControl )
 	DEFINE_FIELD( m_flFloatLerpTransitionTime, FIELD_FLOAT ),
 	DEFINE_FIELD( m_nModifyMode, FIELD_INTEGER ),
 	// Inputs.
+#ifdef TE120
 	DEFINE_INPUTFUNC( FIELD_FLOAT, "SetMaterialVar", SetMaterialVar ),//TE120
+#else
+	DEFINE_INPUTFUNC( FIELD_STRING, "SetMaterialVar", SetMaterialVar ),
+#endif // TE120
 	DEFINE_INPUTFUNC( FIELD_VOID, "SetMaterialVarToCurrentTime", SetMaterialVarToCurrentTime ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "StartAnimSequence", InputStartAnimSequence ),
 	DEFINE_INPUTFUNC( FIELD_STRING, "StartFloatLerp", InputStartFloatLerp ),
@@ -178,10 +182,14 @@ void CMaterialModifyControl::SetMaterialVar( inputdata_t &inputdata )
 	//}
 
 //TE120--
+#ifdef TE120
 	char temp[32];
 	Q_snprintf( temp, 32, "%f", inputdata.value.Float() );
 
 	Q_strncpy( m_szMaterialVarValue.GetForModify(), temp, MATERIAL_MODIFY_STRING_SIZE );
+#else
+	Q_strncpy( m_szMaterialVarValue.GetForModify(), inputdata.value.String(), MATERIAL_MODIFY_STRING_SIZE );
+#endif // TE120
 //TE120--
 
 	m_nModifyMode = MATERIAL_MODIFY_MODE_SETVAR;

@@ -295,7 +295,9 @@ void CParticleCollision::Setup( const Vector &origin, const Vector *dir, float a
 //-----------------------------------------------------------------------------
 bool CParticleCollision::MoveParticle( Vector &origin, Vector &velocity, float *rollDelta, float timeDelta, trace_t *pTrace )
 {
-	pTrace->allsolid = false;
+#ifdef TE120
+	// pTrace->allsolid = false;
+#endif
 
 	//Don't bother with non-moving particles
 	if ( velocity == vec3_origin )

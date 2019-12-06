@@ -264,7 +264,9 @@ void C_BaseCombatWeapon::DrawCrosshair()
 
 	// Find out if this weapon's auto-aimed onto a target
 	bool bOnTarget = ( m_iState == WEAPON_IS_ONTARGET );
-	bool bOnUsable = ( m_iState == WEAPON_ON_USABLE );//TE120
+#ifdef TE120
+	bool bOnUsable = ( m_iState == WEAPON_ON_USABLE ); // TE120
+#endif // TE120
 	if ( player->GetFOV() >= 90 )
 	{
 		// normal crosshairs
@@ -275,11 +277,13 @@ void C_BaseCombatWeapon::DrawCrosshair()
 			crosshair->SetCrosshair( GetWpnData().iconAutoaim, clr );
 		}
 //TE120--
+#ifdef TE120
 		else if ( bOnUsable && GetWpnData().iconCrosshairUse )
 		{
 			clr[3] = 255;
 			crosshair->SetCrosshair( GetWpnData().iconCrosshairUse, clr );
 		}
+#endif // TE120
 //TE120--
 		else if ( GetWpnData().iconCrosshair )
 		{
@@ -297,10 +301,12 @@ void C_BaseCombatWeapon::DrawCrosshair()
 
 		// zoomed crosshairs
 		if (bOnTarget && GetWpnData().iconZoomedAutoaim)
-//TE120--
 			crosshair->SetCrosshair( GetWpnData().iconZoomedAutoaim, white );
+//TE120--
+#ifdef TE120
 		else if ( bOnUsable && GetWpnData().iconCrosshairUse )
 			crosshair->SetCrosshair( GetWpnData().iconCrosshairUse, white );
+#endif // TE120
 //TE120--
 		else if ( GetWpnData().iconZoomedCrosshair )
 			crosshair->SetCrosshair( GetWpnData().iconZoomedCrosshair, white );
@@ -562,4 +568,13 @@ void C_BaseCombatWeapon::GetToolRecordingState( KeyValues *msg )
 	{
 		SetModelIndex( nModelIndex );
 	}
+}
+
+
+void C_BaseCombatWeapon::DoAnimationEvents(CStudioHdr* pStudio)
+{
+	if (GetOwner() && GetOwner()->IsPlayer())
+		return;
+
+	BaseClass::DoAnimationEvents(pStudio);
 }

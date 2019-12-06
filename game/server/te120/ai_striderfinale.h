@@ -77,9 +77,9 @@ private:
 	CNPC_Strider	*m_npcStrider1;
 	CNPC_Strider	*m_npcStrider2;
 	CNPC_Strider	*m_npcStrider3;
-	CBaseEntity	*m_pPatrolPath;
-	CBaseEntity	*m_pGuardPath;
-	Vector		m_vLastPos;
+	CBaseEntity		*m_pPatrolPath;
+	CBaseEntity		*m_pGuardPath;
+	Vector			m_vLastPos;
 
 	void StriderFollowPlayer();
 	void StriderPatrol();

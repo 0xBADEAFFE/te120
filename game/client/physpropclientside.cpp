@@ -601,6 +601,7 @@ void C_PhysPropClientside::ImpactTrace( trace_t *pTrace, int iDamageType, const 
 }
 
 //TE120--
+#ifdef TE120
 void C_PhysPropClientside::GCPush( Vector *start, float radius )
 {
 	IPhysicsObject *pPhysicsObject = VPhysicsGetObject();
@@ -656,6 +657,7 @@ void C_PhysPropClientside::GCPush( Vector *start, float radius )
 
 	pPhysicsObject->AddVelocity( vVel, &aVel );
 }
+#endif // TE120
 //TE120--
 
 const char *C_PhysPropClientside::ParseEntity( const char *pEntData )

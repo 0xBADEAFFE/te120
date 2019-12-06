@@ -31,7 +31,7 @@ static const uint32 _sincos_inv_masks[] = { (uint32)~0x0, (uint32)0x0 };
 		const __declspec(align(16)) float _ps_##Name[4] = { Val, Val, Val, Val }
 
 	#define _PS_EXTERN_CONST_TYPE(Name, Type, Val) \
-		const __declspec(align(16)) Type _ps_##Name[4] = { Val, Val, Val, Val }; \
+		const __declspec(align(16)) Type _ps_##Name[4] = { (Type)Val, (Type)Val, (Type)Val, (Type)Val }; \
 
 	#define _EPI32_CONST(Name, Val) \
 		static const __declspec(align(16)) __int32 _epi32_##Name[4] = { Val, Val, Val, Val }
@@ -846,8 +846,8 @@ void _SSE2_SinCos(float x, float* s, float* c)  // any x
 		movss	[edx], xmm6
 	}
 #elif POSIX
-	//#warning "_SSE2_SinCos NOT implemented!"
-	//Assert( 0 );
+	// #warning "_SSE2_SinCos NOT implemented!"
+	// Assert( 0 );
 
 	// implementation from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
 	Assert( "Needs testing, verify impl!\n" );
@@ -995,8 +995,8 @@ float _SSE2_cos(float x)
 		movss   x,    xmm0
 	}
 #elif POSIX
-	//#warning "_SSE2_cos NOT implemented!"
-	//Assert( 0 );
+	// #warning "_SSE2_cos NOT implemented!"
+	// Assert( 0 );
 
 	// implementation from http://gruntthepeon.free.fr/ssemath/sse_mathfun.h
 	Assert( "Needs testing, verify impl!\n" );

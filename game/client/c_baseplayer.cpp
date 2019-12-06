@@ -221,7 +221,9 @@ END_RECV_TABLE()
 		RecvPropArray3		( RECVINFO_ARRAY(m_iAmmo), RecvPropInt( RECVINFO(m_iAmmo[0])) ),
 
 		RecvPropInt			( RECVINFO(m_fOnTarget) ),
-		RecvPropInt			( RECVINFO(m_fOnUsable) ),//TE120
+#ifdef TE120
+		RecvPropInt			( RECVINFO(m_fOnUsable) ), // TE120
+#endif // TE120
 
 		RecvPropInt			( RECVINFO( m_nTickBase ) ),
 		RecvPropInt			( RECVINFO( m_nNextThinkTick ) ),
@@ -360,7 +362,9 @@ BEGIN_PREDICTION_DATA( C_BasePlayer )
 	DEFINE_PRED_FIELD( m_iBonusProgress, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_iBonusChallenge, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_fOnTarget, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),
-	DEFINE_PRED_FIELD( m_fOnUsable, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ),//TE120
+#ifdef TE120
+	DEFINE_PRED_FIELD( m_fOnUsable, FIELD_BOOLEAN, FTYPEDESC_INSENDTABLE ), // TE120
+#endif // TE120
 	DEFINE_PRED_FIELD( m_nNextThinkTick, FIELD_INTEGER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_lifeState, FIELD_CHARACTER, FTYPEDESC_INSENDTABLE ),
 	DEFINE_PRED_FIELD( m_nWaterLevel, FIELD_CHARACTER, FTYPEDESC_INSENDTABLE ),
@@ -412,10 +416,6 @@ C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset( "C_BasePlayer::m_iv_vecViewOf
 	m_vecOldViewAngles.Init();
 #endif
 
-	// Prevent clip with dynamic lights
-	ConVarRef r_flashlightscissor( "r_flashlightscissor" );
-	r_flashlightscissor.SetValue( "0" );
-
 	m_pFlashlight = NULL;
 
 	m_pCurrentVguiScreen = NULL;
@@ -444,6 +444,12 @@ C_BasePlayer::C_BasePlayer() : m_iv_vecViewOffset( "C_BasePlayer::m_iv_vecViewOf
 	m_nForceVisionFilterFlags = 0;
 
 	ListenForGameEvent( "base_player_teleported" );
+	//
+	// At this point, the bugs that are being fixed are due to the bug-fixes...
+	// https://developer.valvesoftware.com/wiki/Env_projectedtexture/fixes#Fixing_cuts_in_projected_texture
+	//
+	ConVarRef scissor("r_flashlightscissor");
+	scissor.SetValue("0");
 }
 
 //-----------------------------------------------------------------------------
@@ -556,7 +562,7 @@ CBaseEntity	*C_BasePlayer::GetObserverTarget() const	// returns players target o
 				return (const_cast<C_BasePlayer*>(this))->GetBaseEntity();
 				break;
 			default:
-				assert ( false );
+				Assert ( false );
 				break;
 			}
 		}
@@ -650,7 +656,7 @@ int C_BasePlayer::GetObserverMode() const
 			return OBS_MODE_CHASE;
 			break;
 		default:
-			assert ( false );
+			Assert ( false );
 			break;
 		}
 	}
@@ -2365,6 +2371,7 @@ bool C_BasePlayer::IsUseableEntity( CBaseEntity *pEntity, unsigned int requiredC
 }
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Let player know when his crosshair is on a usable
 //-----------------------------------------------------------------------------
@@ -2379,6 +2386,7 @@ void C_BasePlayer::CheckUsable( void )
 	else
 		SetOnUsable( false );
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------

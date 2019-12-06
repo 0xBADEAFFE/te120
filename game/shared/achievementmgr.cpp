@@ -146,8 +146,8 @@ static void WriteAchievementGlobalState( KeyValues *pKV, bool bPersistToSteamClo
                     {
                         char*   pData = new char[filesize];
 
-                        if (pData)
-                        {
+                        //if (pData)
+                        //{
                             // Read in the data from the file system GameState.txt file
                             FileHandle_t    handle = filesystem->Open(szFilename, "r");
 
@@ -166,7 +166,7 @@ static void WriteAchievementGlobalState( KeyValues *pKV, bool bPersistToSteamClo
 
                             // Delete the data array
                             delete []pData;
-                        }
+                        //}
                     }
                 }
             }
@@ -779,8 +779,8 @@ void CAchievementMgr::LoadGlobalState()
                     // Allocate space for the file data
                     char*   pData = new char[fileSize];
 
-                    if (pData)
-                    {
+                    //if (pData)
+                    //{
                         int32   sizeRead = pRemoteStorage->FileRead(szFilename, pData, fileSize);
 
                         if (sizeRead == fileSize)
@@ -798,7 +798,7 @@ void CAchievementMgr::LoadGlobalState()
 
                         // Delete the data array
                         delete []pData;
-                    }
+                    //}
                 }
             }
         }

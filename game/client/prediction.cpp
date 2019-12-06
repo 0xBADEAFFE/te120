@@ -200,6 +200,8 @@ void CPrediction::CheckError( int commands_acknowledged )
 void CPrediction::ShutdownPredictables( void )
 {
 #if !defined( NO_ENTITY_PREDICTION )
+	// MDLCACHE_CRITICAL_SECTION();
+
 	// Transfer intermediate data from other predictables
 	int c = predictables->GetPredictableCount();
 	int i;
@@ -903,9 +905,9 @@ void CPrediction::RunCommand( C_BasePlayer *player, CUserCmd *ucmd, IMoveHelper 
 		pVehicle->ProcessMovement( player, g_pMoveData );
 	}
 
-	FinishMove( player, ucmd, g_pMoveData );
-
 	RunPostThink( player );
+
+	FinishMove(player, ucmd, g_pMoveData);
 
 	g_pGameMovement->FinishTrackPredictionErrors( player );
 
@@ -1510,6 +1512,9 @@ bool CPrediction::PerformPrediction( bool received_new_world_update, C_BasePlaye
 	//}
 
 	Assert( i >= 1 );
+
+	// MDLCACHE_CRITICAL_SECTION();
+
 	while ( true )
 	{
 		// Incoming_acknowledged is the last usercmd the server acknowledged having acted upon

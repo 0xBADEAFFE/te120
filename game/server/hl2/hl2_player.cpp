@@ -47,9 +47,11 @@
 #include "filters.h"
 #include "tier0/icommandline.h"
 //TE120--
+#ifdef TE120
 #include "ammodef.h"
 #include "npc_strider.h"
 #include "weapon_rpg.h"
+#endif // TE120
 //TE120--
 
 #ifdef HL2_EPISODIC
@@ -77,7 +79,9 @@ extern ConVar autoaim_max_dist;
 
 // This switches between the single primary weapon, and multiple weapons with buckets approach (jdw)
 #define	HL2_SINGLE_PRIMARY_WEAPON_MODE	0
-#define GC_DRAIN_TIME 14.0//TE120
+#ifdef TE120
+#define GC_DRAIN_TIME 14.0 // TE120
+#endif // TE120
 #define TIME_IGNORE_FALL_DAMAGE 10.0
 
 extern int gEvilImpulse101;
@@ -91,8 +95,10 @@ ConVar hl2_sprintspeed( "hl2_sprintspeed", "320" );
 ConVar hl2_darkness_flashlight_factor ( "hl2_darkness_flashlight_factor", "1" );
 
 //TE120--
+#ifdef TE120
 ConVar hl2_energyrecoveryrate( "hl2_energyrecoveryrate", "4" );
 ConVar hl2_mindelayrecoveryrate( "hl2_mindelayrecoveryrate", "0.1" );
+#endif // TE120
 //TE120--
 
 #ifdef HL2MP
@@ -222,7 +228,9 @@ public:
 #ifdef PORTAL
 	void InputSuppressCrosshair( inputdata_t &inputdata );
 #endif // PORTAL2
-	void InputSetBlurry( inputdata_t &inputdata );//TE120
+#ifdef TE120
+	void InputSetBlurry( inputdata_t &inputdata ); // TE120
+#endif // TE120
 
 	void Activate ( void );
 
@@ -364,7 +372,9 @@ BEGIN_DATADESC( CHL2_Player )
 	DEFINE_FIELD( m_flTargetFindTime, FIELD_TIME ),
 
 	DEFINE_FIELD( m_flAdmireGlovesAnimTime, FIELD_TIME ),
-	DEFINE_FIELD( m_flNextCheckUsableTime, FIELD_TIME ),//TE120
+#ifdef TE120
+	DEFINE_FIELD( m_flNextCheckUsableTime, FIELD_TIME ), // TE120
+#endif // TE120
 	DEFINE_FIELD( m_flNextFlashlightCheckTime, FIELD_TIME ),
 	DEFINE_FIELD( m_flFlashlightPowerDrainScale, FIELD_FLOAT ),
 	DEFINE_FIELD( m_bFlashlightDisabled, FIELD_BOOLEAN ),
@@ -397,7 +407,9 @@ BEGIN_DATADESC( CHL2_Player )
 
 	//DEFINE_FIELD( m_hPlayerProxy, FIELD_EHANDLE ), //Shut up class check!
 
-	DEFINE_FIELD( m_flNextLocatorUpdateTime, FIELD_TIME ),//TE120
+#ifdef TE120
+	DEFINE_FIELD( m_flNextLocatorUpdateTime, FIELD_TIME ), // TE120
+#endif // TE120
 
 END_DATADESC()
 
@@ -410,12 +422,14 @@ CHL2_Player::CHL2_Player()
 	m_flArmorReductionTime = 0.0f;
 	m_iArmorReductionFrom = 0;
 //TE120--
+#ifdef TE120
 	m_flOverHeatWait	= MIN_READY_DELAY;
 	m_flEnergyRequired	= MIN_ENERGY_REQUIRED;
 	m_flNextCoolDown	= 0.0f;
 	m_flLastRecoveryTime	= 1.0f;
 	m_flRecoveryRateScale	= 1.0f;
 	m_flRecoveryRate	= 1.04;
+#endif // TE120
 //TE120--
 }
 
@@ -458,6 +472,7 @@ void CHL2_Player::Precache( void )
 	PrecacheScriptSound( "HL2Player.Use" );
 	PrecacheScriptSound( "HL2Player.BurnPain" );
 //TE120--
+#ifdef TE120
 	PrecacheScriptSound( "Geiger.BeepHigh" );
 
 	PrecacheScriptSound( "JNK_Radar_Ping_Friendly" );
@@ -466,6 +481,7 @@ void CHL2_Player::Precache( void )
 	CEffectData	data;
 	data.m_flScale = -1;
 	DispatchEffect( "CE_GravityBallFadeConcOn", data );
+#endif // TE120
 //TE120--
 }
 
@@ -496,6 +512,13 @@ void CHL2_Player::EquipSuit( bool bPlayEffects )
 	BaseClass::EquipSuit();
 
 	m_HL2Local.m_bDisplayReticle = true;
+
+#ifndef TE120
+	if ( bPlayEffects == true )
+	{
+		StartAdmireGlovesAnimation();
+	}
+#endif // TE120
 }
 
 void CHL2_Player::RemoveSuit( void )
@@ -589,6 +612,7 @@ void CHL2_Player::HandleArmorReduction( void )
 void CHL2_Player::PreThink(void)
 {
 //TE120--
+#ifdef TE120
 	if ( g_iSkillLevel == SKILL_HARD )
 	{
 		m_flRecoveryRate = 1.02;
@@ -597,6 +621,7 @@ void CHL2_Player::PreThink(void)
 	{
 		m_flRecoveryRate = 1.04;
 	}
+#endif // TE120
 //TE120--
 
 	if ( player_showpredictedposition.GetBool() )
@@ -610,7 +635,9 @@ void CHL2_Player::PreThink(void)
 	}
 
 #ifdef HL2_EPISODIC
-	UpdateLocator();//TE120
+#ifdef TE120
+	UpdateLocator(); // TE120
+#endif // TE120
 
 	if( m_hLocatorTargetEntity != NULL )
 	{
@@ -772,7 +799,9 @@ void CHL2_Player::PreThink(void)
 
 #ifdef HL2_EPISODIC
 	CheckFlashlight();
-	CheckUsable();//TE120
+#ifdef TE120
+	CheckUsable(); // TE120
+#endif // TE120
 #endif	// HL2_EPISODIC
 
 	// So the correct flags get sent to client asap.
@@ -935,6 +964,7 @@ void CHL2_Player::PreThink(void)
 	}
 
 //TE120--
+#ifdef TE120
 	// Wind down weapon overheat time
 	if ( ( m_flEnergyRequired > MIN_ENERGY_REQUIRED || m_flOverHeatWait > MIN_READY_DELAY || m_flRecoveryRateScale < 1.0 ) && ( gpGlobals->curtime >= m_flNextCoolDown ) )
 	{
@@ -957,6 +987,7 @@ void CHL2_Player::PreThink(void)
 		m_flLastRecoveryTime = random->RandomFloat( 0.1, 1.0 );
 		m_flNextCoolDown = gpGlobals->curtime + m_flLastRecoveryTime;
 	}
+#endif // TE120
 //TE120--
 }
 
@@ -1208,7 +1239,9 @@ void CHL2_Player::Spawn(void)
 	GetPlayerProxy();
 
 	SetFlashlightPowerDrainScale( 1.0f );
-	m_flNextLocatorUpdateTime = gpGlobals->curtime - 1.0f;//TE120
+#ifdef TE120
+	m_flNextLocatorUpdateTime = gpGlobals->curtime - 1.0f; // TE120
+#endif // TE120
 }
 
 //-----------------------------------------------------------------------------
@@ -1379,7 +1412,11 @@ void CHL2_Player::ToggleZoom(void)
 //-----------------------------------------------------------------------------
 void CHL2_Player::StartZooming( void )
 {
-	int iFOV = 35;//TE120
+#ifdef TE120
+	int iFOV = 35; // TE120
+#else
+	int iFOV = 25;
+#endif // TE120
 	if ( SetFOV( this, iFOV, 0.4f ) )
 	{
 		m_HL2Local.m_bZooming = true;
@@ -2191,6 +2228,7 @@ bool CHL2_Player::IsIlluminatedByFlashlight( CBaseEntity *pEntity, float *flRetu
 }
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Let player know when his crosshair is on a usable
 //-----------------------------------------------------------------------------
@@ -2227,6 +2265,7 @@ void CHL2_Player::CheckUsable( void )
 		SetOnUsable(false);
 	}
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------
@@ -2358,6 +2397,7 @@ void CHL2_Player::OnSquadMemberKilled( inputdata_t &data )
 }
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Search for things that the locator detects, and stick them in the
 // UTILVector that gets sent to the client for locator display.
@@ -2479,6 +2519,7 @@ void CHL2_Player::UpdateLocator( bool forceUpdate )
 	WRITE_BYTE(0); // end marker
 	MessageEnd();	// send message
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------
@@ -2697,10 +2738,12 @@ void CHL2_Player::Event_Killed( const CTakeDamageInfo &info )
 	NotifyScriptsOfDeath();
 
 //TE120--
+#ifdef TE120
 	// Reset drunk post process
 	CEffectData	data;
 	data.m_flScale = -1;
 	DispatchEffect( "CE_GravityBallFadeConcOn", data );
+#endif // TE120
 //TE120--
 }
 
@@ -3361,7 +3404,11 @@ void CHL2_Player::PickupObject( CBaseEntity *pObject, bool bLimitMassAndSize )
 
 	if ( bLimitMassAndSize == true )
 	{
-		if ( CBasePlayer::CanPickupObject( pObject, 35, 208 ) == false )//TE120
+#ifdef TE120
+		if ( CBasePlayer::CanPickupObject( pObject, 35, 208 ) == false ) // TE120
+#else
+		if ( CBasePlayer::CanPickupObject( pObject, 35, 128 ) == false )
+#endif // TE120
 			 return;
 	}
 
@@ -4023,7 +4070,9 @@ BEGIN_DATADESC( CLogicPlayerProxy )
 #ifdef PORTAL
 	DEFINE_INPUTFUNC( FIELD_VOID,	"SuppressCrosshair", InputSuppressCrosshair ),
 #endif // PORTAL
-	DEFINE_INPUTFUNC( FIELD_VOID,	"SetBlurry", InputSetBlurry ),//TE120
+#ifdef TE120
+	DEFINE_INPUTFUNC( FIELD_VOID,	"SetBlurry", InputSetBlurry ), // TE120
+#endif // TE120
 	DEFINE_FIELD( m_hPlayer, FIELD_EHANDLE ),
 END_DATADESC()
 
@@ -4118,6 +4167,7 @@ void CLogicPlayerProxy::InputLowerWeapon( inputdata_t &inputdata )
 
 	CHL2_Player *pPlayer = dynamic_cast<CHL2_Player*>(m_hPlayer.Get());
 //TE120--
+#ifdef TE120
 	if ( pPlayer->GetActiveWeapon() )
 	{
 		if ( pPlayer->GetActiveWeapon()->CanHolster() )
@@ -4128,6 +4178,9 @@ void CLogicPlayerProxy::InputLowerWeapon( inputdata_t &inputdata )
 				pPlayer->GetActiveWeapon()->Deploy();
 		}
 	}
+#else
+	pPlayer->Weapon_Lower();
+#endif // TE120
 //TE120--
 }
 
@@ -4150,6 +4203,7 @@ void CLogicPlayerProxy::InputDisableCappedPhysicsDamage( inputdata_t &inputdata 
 }
 
 //TE120--
+#ifdef TE120
 void CLogicPlayerProxy::InputSetBlurry( inputdata_t &inputdata )
 {
 	// Send the concussed post effect on
@@ -4158,6 +4212,7 @@ void CLogicPlayerProxy::InputSetBlurry( inputdata_t &inputdata )
 	data.m_flScale = 1.0;
 	DispatchEffect( "CE_GravityBallFadeConcOn", data );
 }
+#endif // TE120
 //TE120--
 
 void CLogicPlayerProxy::InputSetLocatorTargetEntity( inputdata_t &inputdata )

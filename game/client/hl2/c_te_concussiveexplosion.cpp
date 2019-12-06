@@ -10,7 +10,9 @@
 #include "ragdollexplosionenumerator.h"
 #include "tier1/KeyValues.h"
 #include "toolframework_client.h"
-#include "c_te_effect_dispatch.h"//TE120
+#ifdef TE120
+#include "c_te_effect_dispatch.h" // TE120
+#endif // TE120
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -59,6 +61,7 @@ void C_TEConcussiveExplosion::AffectRagdolls( void )
 }
 
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
@@ -84,6 +87,7 @@ void RagdollConcussionCallback( const CEffectData &data )
 }
 
 DECLARE_CLIENT_EFFECT( "RagdollConcussion", RagdollConcussionCallback );
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------

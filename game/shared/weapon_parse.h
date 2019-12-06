@@ -124,7 +124,9 @@ public:
 	CHudTexture 					*iconZoomedCrosshair;
 	CHudTexture 					*iconZoomedAutoaim;
 	CHudTexture						*iconSmall;
+#ifdef TE120
 	CHudTexture						*iconCrosshairUse;//TE120
+#endif // TE120
 
 // TF2 specific
 	bool					bShowUsageHint;							// if true, then when you receive the weapon, show a hint about it

@@ -151,7 +151,11 @@ CFlare::~CFlare()
 //-----------------------------------------------------------------------------
 void CFlare::Precache( void )
 {
-	PrecacheModel("models/weapons/shell.mdl" );//TE120: prevent max models error
+#ifdef TE120
+	PrecacheModel("models/weapons/shell.mdl" ); // TE120: prevent max models error
+#else
+	PrecacheModel("models/weapons/flare.mdl" );
+#endif // TE120
 
 	PrecacheScriptSound( "Weapon_FlareGun.Burn" );
 
@@ -187,8 +191,11 @@ int CFlare::Restore( IRestore &restore )
 void CFlare::Spawn( void )
 {
 	Precache();
-
-	SetModel( "models/weapons/shell.mdl" );//TE120: prevent max models error
+#ifdef TE120
+	SetModel( "models/weapons/shell.mdl" ); // TE120: prevent max models error
+#else
+	SetModel( "models/weapons/flare.mdl" );
+#endif // TE120
 
 	UTIL_SetSize( this, Vector( -2, -2, -2 ), Vector( 2, 2, 2 ) );
 

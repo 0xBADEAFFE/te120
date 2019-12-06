@@ -42,7 +42,11 @@
 #endif
 
 #ifdef HL2_DLL
+#ifdef TE120
 #include "weapon_physconcussion.h"//TE120
+#else
+#include "weapon_physcannon.h"
+#endif // TE120
 #endif
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -143,6 +147,8 @@ void Host_Say( edict_t *pEdict, const CCommand &args, bool teamonly )
 	{
 		pPlayer = ((CBasePlayer *)CBaseEntity::Instance( pEdict ));
 		Assert( pPlayer );
+		if (!pPlayer)
+			return;
 
 		// make sure the text has valid content
 		p = CheckChatText( pPlayer, p );
@@ -310,6 +316,13 @@ void ClientPrecache( void )
 	CBaseEntity::PrecacheModel( "sprites/blueglow1.vmt" );
 	CBaseEntity::PrecacheModel( "sprites/purpleglow1.vmt" );
 	CBaseEntity::PrecacheModel( "sprites/purplelaser1.vmt" );
+
+	/* BM: No such sound!
+BUGBUG: Should there be?
+#ifndef HL2MP
+	CBaseEntity::PrecacheScriptSound( "Hud.Hint" );
+#endif // HL2MP
+	//*/
 
 	CBaseEntity::PrecacheScriptSound( "Player.FallDamage" );
 	CBaseEntity::PrecacheScriptSound( "Player.Swim" );
@@ -911,7 +924,7 @@ CON_COMMAND_F_COMPLETION(give, "Give item to player. Syntax: <item name>", FCVAR
 		return;
 	}
 
-	// Dirty hack to avoid suit playing its pickup sound
+	// Dirty hack to avoid suit playing it's pickup sound
 	if(FStrEq(pszClassName, "item_suit"))
 	{
 		pPlayer->EquipSuit(false);
@@ -1057,14 +1070,24 @@ void CC_Player_PhysSwap( void )
 
 			const char *strWeaponName = pWeapon->GetName();
 //TE120--
+#ifdef TE120
 			if ( !Q_stricmp( strWeaponName, "weapon_physconcussion" ) )
 			{
 				PhysConcussionForceDrop( pWeapon, NULL );
+#else	
+			if ( !Q_stricmp( strWeaponName, "weapon_physcannon" ) )
+			{
+				PhysCannonForceDrop( pWeapon, NULL );
+#endif // TE120
 				pPlayer->SelectLastItem();
 			}
 			else
 			{
+#ifdef TE120
 				pPlayer->SelectItem( "weapon_physconcussion" );
+#else
+				pPlayer->SelectItem( "weapon_physcannon" );
+#endif // TE120
 			}
 //TE120--
 		}

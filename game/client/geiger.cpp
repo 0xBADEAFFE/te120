@@ -19,7 +19,9 @@
 #include <vgui_controls/Controls.h>
 #include <vgui_controls/Panel.h>
 #include <vgui/ISurface.h>
-#include <vgui_controls/AnimationController.h>//TE120
+#ifdef TE120
+#include <vgui_controls/AnimationController.h> // TE120
+#endif // TE120
 
 using namespace vgui;
 
@@ -44,7 +46,9 @@ public:
 private:
 	int m_iGeigerRange;
 	float m_flLastSoundTestTime;
-	bool bFlashingLocator;//TE120
+#ifdef TE120
+	bool bFlashingLocator; // TE120
+#endif // TE120
 };
 
 DECLARE_HUDELEMENT( CHudGeiger );
@@ -59,7 +63,9 @@ CHudGeiger::CHudGeiger( const char *pElementName ) :
 	vgui::Panel *pParent = g_pClientMode->GetViewport();
 	SetParent( pParent );
 	m_flLastSoundTestTime = -9999;
-	bFlashingLocator = false;//TE120
+#ifdef TE120
+	bFlashingLocator = false; // TE120
+#endif // TE120
 
 	SetHiddenBits( HIDEHUD_HEALTH );
 }
@@ -105,6 +111,7 @@ void CHudGeiger::MsgFunc_Geiger( bf_read &msg )
 bool CHudGeiger::ShouldDraw( void )
 {
 //TE120--
+#ifdef TE120
 	// Repeating this here since it's possible to skip this due to timing delays in the paint function
 	if ( (m_iGeigerRange > 450) )
 	{
@@ -120,6 +127,7 @@ bool CHudGeiger::ShouldDraw( void )
 		g_pClientMode->GetViewportAnimationController()->StartAnimationSequence("RadiationHigh");
 		bFlashingLocator = true;
 	}
+#endif // TE120
 //TE120--
 
 	return ( ( m_iGeigerRange > 0 && m_iGeigerRange < 1000 ) && CHudElement::ShouldDraw() );
@@ -140,10 +148,15 @@ void CHudGeiger::Paint()
 	}
 
 	m_flLastSoundTestTime = gpGlobals->curtime;
-//TE120--
-	// piecewise linear is better than continuous formula for this
-	int range = m_iGeigerRange + 50;
 
+	// piecewise linear is better than continuous formula for this
+//TE120--
+#ifdef TE120
+	int range = m_iGeigerRange + 50;
+#else
+	int range = m_iGeigerRange;
+#endif // TE120
+//TE120--
 	if (range > 800)
 	{
 		pct = 0;			//Msg ( "range > 800\n");
@@ -197,7 +210,6 @@ void CHudGeiger::Paint()
 	}
 	else if (range > 50)
 	{
-//TE120--
 		pct = 90;
 		flvol = 0.475;		//Msg ( "range > 50\n");
 	}

@@ -190,8 +190,8 @@ static inline char* EmitLiteral(char* op,
       n >>= 8;
       count++;
     }
-    assert(count >= 1);
-    assert(count <= 4);
+    Assert(count >= 1);
+    Assert(count <= 4);
     *base = LITERAL | ((59+count) << 2);
   }
   memcpy(op, literal, len);
@@ -205,7 +205,7 @@ static inline char* EmitCopyLessThan64(char* op, int offset, int len) {
 
   if ((len < 12) && (offset < 2048)) {
     int len_minus_4 = len - 4;
-    assert(len_minus_4 < 8);            // Must fit in 3 bits
+    Assert(len_minus_4 < 8);            // Must fit in 3 bits
     *op++ = COPY_1_BYTE_OFFSET | ((len_minus_4) << 2) | ((offset >> 8) << 5);
     *op++ = offset & 0xff;
   } else {
@@ -252,7 +252,7 @@ uint16* WorkingMemory::GetHashTable(size_t input_size, int* table_size) {
   // fill the table, incurring O(hash table size) overhead for
   // compression, and if the input is short, we won't need that
   // many hash table entries anyway.
-  assert(kMaxHashTableSize >= 256);
+  Assert(kMaxHashTableSize >= 256);
   int htsize = 256;
   while (htsize < kMaxHashTableSize && htsize < input_size) {
     htsize <<= 1;

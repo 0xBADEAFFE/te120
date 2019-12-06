@@ -667,6 +667,7 @@ CNPCSpawnDestination *CTemplateNPCMaker::FindSpawnDestination()
 				vecTopOfHull.x = 0;
 				vecTopOfHull.y = 0;
 //TE120--
+#ifdef TE120
 				bool fVisible = (pPlayer->FInViewCone( vecTest ) || pPlayer->FInViewCone( vecTest + vecTopOfHull ) );
 
 				if ( fVisible )
@@ -677,7 +678,11 @@ CNPCSpawnDestination *CTemplateNPCMaker::FindSpawnDestination()
 				{
 					DevMsg( 1, "(%s) Spawner not visible.\n", STRING( GetEntityName() ) );
 				}
+#else
+				bool fVisible = (pPlayer->FVisible( vecTest ) || pPlayer->FVisible( vecTest + vecTopOfHull ) );
+#endif // TE120
 //TE120--
+
 				if ( m_CriterionVisibility == TS_YN_YES )
 				{
 					if ( !fVisible )
@@ -687,15 +692,21 @@ CNPCSpawnDestination *CTemplateNPCMaker::FindSpawnDestination()
 				{
 					if( fVisible )
 					{
-//TE120--
 						if ( !( pPlayer->GetFlags() & FL_NOTARGET ) )
 						{
 							fValid = false;
+//TE120--
+#ifdef TE120
 							DevMsg( 1, "(%s) Not counting current spawner since visible\n", STRING( GetEntityName() ) );
+#endif // TE120						
 						}
 						else
 						{
+#ifdef TE120
 							DevMsg( 1, "Spawner %s spawning even though seen due to notarget\n", STRING( GetEntityName() ) );
+#else
+							DevMsg( 2, "Spawner %s spawning even though seen due to notarget\n", STRING( GetEntityName() ) );
+#endif // TE120
 						}
 //TE120--
 					}
@@ -709,20 +720,25 @@ CNPCSpawnDestination *CTemplateNPCMaker::FindSpawnDestination()
 			}
 		}
 //TE120--
+#ifdef TE120
 		else
 		{
 			DevMsg( 1, "(%s) Not counting spawner due to reuse delay\n", STRING( GetEntityName() ) );
 		}
+#endif // TE120
 //TE120--
 		pEnt = gEntList.FindEntityByName( pEnt, m_iszDestinationGroup );
 	}
-//TE120--
+
 	if ( count < 1 )
 	{
+//TE120--
+#ifdef TE120
 		DevMsg( 1, "(%s) No valid spawner found\n", STRING( GetEntityName() ) );
+#endif // TE120
+//TE120--
 		return NULL;
 	}
-//TE120--
 
 	// Now find the nearest/farthest based on distance criterion
 	if( m_CriterionDistance == TS_DIST_DONT_CARE )
@@ -740,7 +756,9 @@ CNPCSpawnDestination *CTemplateNPCMaker::FindSpawnDestination()
 			}
 		}
 //TE120--
+#ifdef TE120
 		DevMsg( 2, "(%s) Couldn't find any valid spawns where AI will fit.\n", STRING( GetEntityName() ) );
+#endif // TE120
 //TE120--
 		return NULL;
 	}

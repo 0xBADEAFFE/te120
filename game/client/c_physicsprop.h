@@ -11,7 +11,9 @@
 #endif
 
 #include "c_breakableprop.h"
-#include "c_entgloweffect.h"//TE120
+#ifdef TE120
+#include "c_entgloweffect.h" // TE120
+#endif // TE120
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -32,11 +34,13 @@ protected:
 	bool m_bAwake;
 	bool m_bAwakeLastTime;
 //TE120--
+#ifdef TE120
 	bool m_bEnableGlow;
 
 private:
 	CEntGlowEffect *m_pEntGlowEffect;
 	bool m_bClientGlow;
+#endif // TE120
 //TE120--
 };
 

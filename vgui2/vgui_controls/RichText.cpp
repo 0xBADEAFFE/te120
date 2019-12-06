@@ -54,6 +54,8 @@ public:
 		SetPaintEnabled(true);
 #endif
 	}
+
+	virtual ~ClickPanel() {}
 	
 	void SetTextIndex( int linkStartIndex, int viewStartIndex )
 	{
@@ -113,6 +115,8 @@ public:
 		SetPaintEnabled( false );
 		m_pRichText = pParent;
 	}
+
+	virtual ~RichTextInterior() {}
 
 /*	virtual IAppearance *GetAppearance()
 	{
@@ -1588,7 +1592,6 @@ void RichText::OnCursorMoved(int x, int y)
 	if (_mouseSelection)
 	{
 		// update the cursor position
-		int x, y;
 		input()->GetCursorPos(x, y);
 		ScreenToLocal(x, y);
 		_cursorPos = PixelToCursorSpace(x, y);

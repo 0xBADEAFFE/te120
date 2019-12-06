@@ -374,10 +374,12 @@ int	CNPC_Barnacle::OnTakeDamage_Alive( const CTakeDamageInfo &inputInfo )
 		info.SetDamage( m_iHealth );
 	}
 //TE120--
+#ifdef TE120
 	else if ( info.GetDamageType() & DMG_PHYSGUN ) // Kill barnacles with physconcussion
 	{
 		info.SetDamage( m_iHealth );
 	}
+#endif // TE120
 //TE120--
 
 	if ( GetActivity() == ACT_IDLE )

@@ -129,7 +129,11 @@ void CGrenadeBeam::Spawn( void )
 	SetMoveType( MOVETYPE_FLYGRAVITY, MOVECOLLIDE_FLY_BOUNCE );
 
 	//UNDONE/HACK: this model is never used but one is needed
-	SetModel( "Models/weapons/shell.mdl" );//TE120: prevent max models error
+#ifdef TE120
+	SetModel( "Models/weapons/shell.mdl" ); // TE120: prevent max models error
+#else
+	SetModel( "Models/weapons/flare.mdl" );
+#endif // TE120
 	AddEffects( EF_NODRAW );
 
 	SetTouch( &CGrenadeBeam::GrenadeBeamTouch );
@@ -426,7 +430,11 @@ void CGrenadeBeam::Precache( void )
 	PrecacheModel("sprites/laser.vmt");
 
 	//UNDONE/HACK: this model is never used but one is needed
-	PrecacheModel("Models/weapons/shell.mdl");//TE120: prevent max models error
+#ifdef TE120
+	PrecacheModel("Models/weapons/shell.mdl"); // TE120: prevent max models error
+#else
+	PrecacheModel("Models/weapons/flare.mdl");
+#endif // TE120
 
 	PrecacheScriptSound( "GrenadeBeam.HitSound" );
 }

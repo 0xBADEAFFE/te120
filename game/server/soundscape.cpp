@@ -292,8 +292,11 @@ void CEnvSoundscape::UpdateForPlayer( ss_update_t &update )
 
 			if ( tr.fraction == 1 && !tr.startsolid )
 			{
-				audioparams_t &audio = update.pPlayer->GetAudioParams();
-				WriteAudioParamsTo( audio );
+				if (update.pPlayer)
+				{
+					audioparams_t& audio = update.pPlayer->GetAudioParams();
+					WriteAudioParamsTo(audio);
+				}
 				update.pCurrentSoundscape = this;
 				update.bInRange = true;
 				update.currentDistance = range;

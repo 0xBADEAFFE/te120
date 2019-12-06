@@ -17,7 +17,9 @@
 
 class CAI_Squad;
 class CPropCombineBall;
-class CPropGravityBall;//TE120
+#ifdef TE120
+class CPropGravityBall; // TE120
+#endif // TE120
 
 extern int TrainSpeed(int iSpeed, int iMax);
 extern void CopyToBodyQue( CBaseAnimating *pCorpse );
@@ -53,6 +55,7 @@ struct commandgoal_t
 #define	WEAPON_TOOL_SLOT			4
 
 //TE120--
+#ifdef TE120
 //----------------------------------------------------
 // Definitions for gc gun overheat mechanic
 //----------------------------------------------------
@@ -60,6 +63,7 @@ struct commandgoal_t
 #define MAX_ENERGY_REQUIRED	50.0
 #define	MIN_READY_DELAY	0.65
 #define	MAX_READY_DELAY	1.0
+#endif // TE120
 //TE120--
 
 //=============================================================================
@@ -237,7 +241,9 @@ public:
 
 	// Flashlight Device
 	void				CheckFlashlight( void );
-	void				CheckUsable( void );//TE120
+#ifdef TE120
+	void				CheckUsable( void ); // TE120
+#endif // TE120
 	int					FlashlightIsOn( void );
 	void				FlashlightTurnOn( void );
 	void				FlashlightTurnOff( void );
@@ -297,6 +303,7 @@ public:
 	CSoundPatch *m_sndWaterSplashes;
 
 //TE120--
+#ifdef TE120
 	// For GC overheat mechanic
 	float	m_flNextCoolDown;	// Time to wait before cooling down
 	float	m_flOverHeatWait;	// Additional time to wait for refire
@@ -304,6 +311,7 @@ public:
 	float	m_flLastRecoveryTime;	// Randomization of cool down
 	float	m_flRecoveryRateScale;	// For exponential recovery
 	float	m_flRecoveryRate;	// Standard recovery rate
+#endif // TE120
 //TE120--
 
 protected:
@@ -320,8 +328,9 @@ private:
 	bool				CommanderExecuteOne( CAI_BaseNPC *pNpc, const commandgoal_t &goal, CAI_BaseNPC **Allies, int numAllies );
 
 	void				OnSquadMemberKilled( inputdata_t &data );
-
-	void				UpdateLocator( bool forceUpdate = false );//TE120
+#ifdef TE120
+	void				UpdateLocator( bool forceUpdate = false ); // TE120
+#endif // TE120
 	Class_T				m_nControlClass;			// Class when player is controlling another entity
 	// This player's HL2 specific data that should only be replicated to
 	//  the player and not to other players.
@@ -329,7 +338,9 @@ private:
 
 	float				m_flTimeAllSuitDevicesOff;
 
-	float				m_flNextLocatorUpdateTime;//TE120
+#ifdef TE120
+	float				m_flNextLocatorUpdateTime; // TE120
+#endif // TE120
 
 	bool				m_bSprintEnabled;		// Used to disable sprint temporarily
 	bool				m_bIsAutoSprinting;		// A proxy for holding down the sprint key.
@@ -358,7 +369,9 @@ private:
 	float				m_flSuitPowerLoad;	// net suit power drain (total of all device's drainrates)
 	float				m_flAdmireGlovesAnimTime;
 
-	float				m_flNextCheckUsableTime;//TE120
+#ifdef TE120
+	float				m_flNextCheckUsableTime; // TE120
+#endif // TE120
 	float				m_flNextFlashlightCheckTime;
 	float				m_flFlashlightPowerDrainScale;
 

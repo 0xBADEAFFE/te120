@@ -14,7 +14,9 @@
 #include "engine/ivdebugoverlay.h"
 #include "tier1/KeyValues.h"
 #include "toolframework_client.h"
-#include "physpropclientside.h"//TE120
+#ifdef TE120
+#include "physpropclientside.h" // TE120
+#endif // TE120
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -28,10 +30,13 @@ CRagdollExplosionEnumerator::CRagdollExplosionEnumerator( Vector origin, float r
 	m_vecOrigin		= origin;
 	m_flMagnitude	= magnitude;
 	m_flRadius		= radius;
-	m_bDirectPush	= false;//TE120
+#ifdef TE120
+	m_bDirectPush	= false; // TE120
+#endif // TE120
 }
 
 //TE120--
+#ifdef TE120
 // Enumator class for ragdolls being affected by explosive forces
 CRagdollExplosionEnumerator::CRagdollExplosionEnumerator( Vector origin, float radius, float magnitude, bool direct )
 {
@@ -40,6 +45,7 @@ CRagdollExplosionEnumerator::CRagdollExplosionEnumerator( Vector origin, float r
 	m_flRadius		= radius;
 	m_bDirectPush	= direct;
 }
+#endif // TE120
 //TE120--
 
 // Actual work code
@@ -68,6 +74,7 @@ CRagdollExplosionEnumerator::~CRagdollExplosionEnumerator()
 		C_BaseEntity *pEnt = m_Entities[i];
 
 //TE120--
+#ifdef TE120
 		if ( m_bDirectPush == true )
 		{
 			//DevMsg("DirectPush: Entity %s\n", pEnt->GetClassname() );
@@ -85,6 +92,7 @@ CRagdollExplosionEnumerator::~CRagdollExplosionEnumerator()
 		}
 		else
 		{
+#endif // TE120
 			C_BaseAnimating *pModel = static_cast< C_BaseAnimating * >( pEnt );
 
 			Vector position = pEnt->CollisionProp()->GetCollisionOrigin();
@@ -116,8 +124,10 @@ CRagdollExplosionEnumerator::~CRagdollExplosionEnumerator()
 
 			pModel->ImpactTrace( &tr, DMG_BLAST, NULL );
 		}
+#ifdef TE120
 //TE120--
 	}
+#endif // TE120
 }
 
 

@@ -408,7 +408,7 @@ bool CBaseEntity::KeyValue( const char *szKeyName, const char *szValue )
 		}
 
 		// Do this so inherited classes looking for 'angles' don't have to bother with 'angle'
-		return KeyValue( szKeyName, szBuf );
+		return KeyValue("angles", szBuf);
 	}
 
 	// NOTE: Have to do these separate because they set two values instead of one
@@ -1181,6 +1181,7 @@ void CBaseEntity::VPhysicsUpdate( IPhysicsObject *pPhysics )
 
 #ifndef CLIENT_DLL
 //TE120--
+#ifdef TE120
 			// Trace ahead a bit to scare enemies if the object is massive
 			if ( pPhysics->GetMass() > 250)
 			{
@@ -1212,6 +1213,7 @@ void CBaseEntity::VPhysicsUpdate( IPhysicsObject *pPhysics )
 					m_flNextScareTime = gpGlobals->curtime + 1.5;
 				}
 			}
+#endif // TE120
 //TE120--
 			PhysicsTouchTriggers( &prevOrigin );
 			PhysicsRelinkChildren(gpGlobals->frametime);

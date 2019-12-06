@@ -109,7 +109,11 @@ IMPLEMENT_ACTTABLE(CWeaponAR2);
 CWeaponAR2::CWeaponAR2( )
 {
 	m_fMinRange1	= 65;
+#ifdef TE120
 	m_fMaxRange1	= 4096;//TE120
+#else
+	m_fMaxRange1	= 2048;
+#endif // TE120
 
 	m_fMinRange2	= 256;
 	m_fMaxRange2	= 1024;
@@ -123,6 +127,8 @@ CWeaponAR2::CWeaponAR2( )
 void CWeaponAR2::Precache( void )
 {
 	BaseClass::Precache();
+
+	PrecacheParticleSystem("weapon_muzzle_smoke_long");
 
 	UTIL_PrecacheOther( "prop_combine_ball" );
 	UTIL_PrecacheOther( "env_entity_dissolver" );
@@ -279,18 +285,23 @@ void CWeaponAR2::SecondaryAttack( void )
 	}
 
 	m_bShotDelayed = true;
+#ifndef TE120
+	m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flDelayedFire = gpGlobals->curtime + 0.5f;
+#endif // TE120
 	CBasePlayer *pPlayer = ToBasePlayer( GetOwner() );
 	if( pPlayer )
 	{
 		pPlayer->RumbleEffect(RUMBLE_AR2_ALT_FIRE, 0, RUMBLE_FLAG_RESTART );
+//TE120--
+#ifdef TE120
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flDelayedFire = gpGlobals->curtime + 0.5f;//TE120
 	}
-//TE120--
 	else
 	{
 		m_flNextPrimaryAttack = m_flNextSecondaryAttack = m_flDelayedFire = gpGlobals->curtime + 1.0f;
-	}
+#endif // TE120
 //TE120--
+	}
 
 	SendWeaponAnim( ACT_VM_FIDGET );
 	WeaponSound( SPECIAL1 );
@@ -300,6 +311,7 @@ void CWeaponAR2::SecondaryAttack( void )
 }
 
 //TE120--
+#ifdef TE120
 int	CWeaponAR2::GetMinBurst( void )
 {
 	if ( GetOwner()->IsPlayer() )
@@ -322,6 +334,7 @@ float CWeaponAR2::GetFireRate( void )
 	else
 		return 0.2f;
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------

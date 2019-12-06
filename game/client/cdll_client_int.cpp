@@ -844,6 +844,35 @@ CHLClient::CHLClient()
 
 extern IGameSystem *ViewportClientSystem();
 
+/* BM: https://developer.valvesoftware.com/wiki/Mounting_multiple_games */
+static void MountAdditionalContent()
+{
+	KeyValues* pMainFile = new KeyValues("gameinfo.txt");
+#ifndef _WINDOWS
+	// case sensitivity
+	pMainFile->LoadFromFile(filesystem, "GameInfo.txt", "MOD");
+	if (!pMainFile)
+#endif
+		pMainFile->LoadFromFile(filesystem, "gameinfo.txt", "MOD");
+
+	if (pMainFile)
+	{
+		KeyValues* pFileSystemInfo = pMainFile->FindKey("FileSystem");
+		if (pFileSystemInfo)
+			for (KeyValues* pKey = pFileSystemInfo->GetFirstSubKey(); pKey; pKey = pKey->GetNextKey())
+			{
+				if (strcmp(pKey->GetName(), "AdditionalContentId") == 0)
+				{
+					int appid = abs(pKey->GetInt());
+					if (appid)
+						if (filesystem->MountSteamContent(-appid) != FILESYSTEM_MOUNT_OK)
+							Warning("Unable to mount extra content with appId: %i\n", appid);
+				}
+			}
+	}
+	pMainFile->deleteThis();
+}
+//*/
 
 //-----------------------------------------------------------------------------
 ISourceVirtualReality *g_pSourceVR = NULL;
@@ -959,6 +988,9 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CreateInterfaceFn physi
 	{
 		return false;
 	}
+
+	/* BM: Called it; see above */
+	MountAdditionalContent();
 
 	if ( CommandLine()->FindParm( "-textmode" ) )
 		g_bTextMode = true;
@@ -1621,9 +1653,6 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 	}
 #endif
 
-	// Check low violence settings for this map
-	g_RagdollLVManager.SetLowViolence( pMapName );
-
 	gHUD.LevelInit();
 
 #if defined( REPLAY_ENABLED )
@@ -1635,6 +1664,7 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 #endif
 
 //TE120--
+#ifdef TE120
 	/*
 	During the end sequence, physics time is scaled to give the appearance
 	of slowed time. If you load another save during this scene the physics
@@ -1654,6 +1684,7 @@ void CHLClient::LevelInitPreEntity( char const* pMapName )
 	steamapicontext->SteamUserStats()->ResetAllStats( true );
 	steamapicontext->SteamUserStats()->StoreStats();
 #endif
+#endif // TE120
 //TE120--
 }
 
@@ -1693,8 +1724,9 @@ void CHLClient::ResetStringTablePointers()
 void CHLClient::LevelShutdown( void )
 {
 //TE120--
+#ifdef TE120
 	/*
-	This is a hacky fix for a bug in chapter_4. If the level is reloaded
+	HACK: This is a hacky fix for a bug in chapter_4. If the level is reloaded
 	before r_unloadlightmaps value has returned to 0 then on the next
 	load the level appears black. r_unloadlightmaps needs about 1-2
 	minutes to refresh the lightmaps. Not sure why this helps with perf
@@ -1705,6 +1737,7 @@ void CHLClient::LevelShutdown( void )
 
 	if (pCVcl_unloadedlightmaps && (pCVcl_unloadedlightmaps->GetFloat() > 0) )
 		engine->ClientCmd( "r_unloadlightmaps 0" );
+#endif // TE120
 //TE120--
 
 	// HACK: Bogus, but the logic is too complicated in the engine

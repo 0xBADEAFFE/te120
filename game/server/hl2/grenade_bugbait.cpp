@@ -165,7 +165,11 @@ void CGrenadeBugBait::BugBaitTouch( CBaseEntity *pOther )
 		pSporeExplosion->SetLocalOrigin( GetAbsOrigin() );
 		pSporeExplosion->m_flSpawnRate			= 8.0f;
 		pSporeExplosion->m_flParticleLifetime	= 2.0f;
+#ifdef TE120
 		pSporeExplosion->SetRenderColor( 0, 128, 64, 38 );
+#else
+		pSporeExplosion->SetRenderColor( 0.0f, 0.5f, 0.25f, 0.15f );
+#endif // TE120
 
 		pSporeExplosion->m_flStartSize = 32.0f;
 		pSporeExplosion->m_flEndSize = 64.0f;

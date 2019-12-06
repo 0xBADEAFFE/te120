@@ -25,6 +25,7 @@ enum // If we have more than 16 types of contacts, RADAR_CONTACT_TYPE_BITS
 };
 
 //TE120--
+#ifdef TE120
 #define LOCATOR_MAX_CONTACTS 32
 #define LOCATOR_CONTACT_TYPE_BITS	3 // Max 8 types of contacts (for networking)
 #define LOCATOR_UPDATE_FREQUENCY 1.5f
@@ -39,5 +40,6 @@ enum // If we have more than 16 types of contacts, LOCATOR_CONTACT_TYPE_BITS
 	LOCATOR_CONTACT_LARGE_ENEMY, // Large enemy (Strider)
 	LOCATOR_CONTACT_RADIATION,
 };
+#endif // TE120
 //TE120--
 #endif

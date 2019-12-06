@@ -1298,9 +1298,11 @@ class CMathCounter : public CLogicalEntity
 {
 	DECLARE_CLASS( CMathCounter, CLogicalEntity );
 //TE120--
+#ifdef TE120
 public:
 	// Outputs
 	COutputFloat m_OutValue;
+#endif // TE120
 //TE120--
 private:
 	float m_flMin;		// Minimum clamp value. If min and max are BOTH zero, no clamping is done.
@@ -1331,10 +1333,15 @@ private:
 	void InputDisable( inputdata_t &inputdata );
 
 	// Outputs
+#ifndef TE120
+	COutputFloat m_OutValue;
+#endif // TE120
 	COutputFloat m_OnGetValue;	// Used for polling the counter value.
 	COutputEvent m_OnHitMin;
 	COutputEvent m_OnHitMax;
+#ifdef TE120
 	COutputEvent m_OnMaxChanged;//TE120
+#endif // TE120
 
 	DECLARE_DATADESC();
 };
@@ -1371,7 +1378,9 @@ BEGIN_DATADESC( CMathCounter )
 	DEFINE_OUTPUT(m_OnHitMin, "OnHitMin"),
 	DEFINE_OUTPUT(m_OnHitMax, "OnHitMax"),
 	DEFINE_OUTPUT(m_OnGetValue, "OnGetValue"),
+#ifdef TE120
 	DEFINE_OUTPUT(m_OnMaxChanged, "OnMaxChanged"),//TE120
+#endif // TE120
 
 END_DATADESC()
 
@@ -1630,11 +1639,13 @@ void CMathCounter::UpdateOutValue(CBaseEntity *pActivator, float fNewValue)
 	if ((m_flMin != 0) || (m_flMax != 0))
 	{
 //TE120--
+#ifdef TE120
 		// Fire an output any time the max value is changed
 		if ( m_bHitMax && ( fNewValue < m_flMax ) )
 		{
 			m_OnMaxChanged.FireOutput( pActivator, this );
 		}
+#endif // TE120
 //TE120--
 		//
 		// Fire an output any time we reach or exceed our maximum value.
@@ -1667,6 +1678,10 @@ void CMathCounter::UpdateOutValue(CBaseEntity *pActivator, float fNewValue)
 		{
 			m_bHitMin = false;
 		}
+
+#ifndef TE120
+		fNewValue = clamp(fNewValue, m_flMin, m_flMax);
+#endif // TE120
 	}
 
 	m_OutValue.Set(fNewValue, pActivator, this);
@@ -1915,6 +1930,7 @@ void CLogicCase::InputPickRandomShuffle( inputdata_t &inputdata )
 	}
 }
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Compares a floating point input to a value in a math_counter entity
 //-----------------------------------------------------------------------------
@@ -1998,6 +2014,7 @@ void CLogicMath::InputCompare( inputdata_t &inputdata )
 		}
 	}
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------

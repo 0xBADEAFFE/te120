@@ -212,6 +212,7 @@ BEGIN_DATADESC( CBaseAnimating )
 
 	DEFINE_KEYFIELD( m_flModelScale, FIELD_FLOAT, "modelscale" ),
 	DEFINE_INPUTFUNC( FIELD_VECTOR, "SetModelScale", InputSetModelScale ),
+	DEFINE_INPUTFUNC(FIELD_STRING, "SetModel", InputSetModel),
 
 	DEFINE_FIELD( m_fBoneCacheFlags, FIELD_SHORT ),
 
@@ -624,6 +625,16 @@ void CBaseAnimating::InputSetModelScale( inputdata_t &inputdata )
 	SetModelScale( vecScale.x, vecScale.y );
 }
 
+//-----------------------------------------------------------------------------
+// Purpose: SetModel input handler
+//-----------------------------------------------------------------------------
+void CBaseAnimating::InputSetModel(inputdata_t &inputdata)
+{
+	char *szModel = (char*)inputdata.value.String();
+	SetModelName(AllocPooledString(szModel));
+	PrecacheModel(STRING(GetModelName()));
+	SetModel(szModel);
+}
 
 //=========================================================
 // SelectWeightedSequence

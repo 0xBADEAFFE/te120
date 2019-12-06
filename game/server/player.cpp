@@ -2770,9 +2770,16 @@ bool CBasePlayer::IsUseableEntity( CBaseEntity *pEntity, unsigned int requiredCa
 		int caps = pEntity->ObjectCaps();
 		if ( caps & (FCAP_IMPULSE_USE|FCAP_CONTINUOUS_USE|FCAP_ONOFF_USE|FCAP_DIRECTIONAL_USE) )
 		{
+#ifndef TE120
+			if ( (caps & requiredCaps) == requiredCaps )
+			{
+#endif // TE120
 			return true;
 		}
 	}
+#ifndef TE120
+	}
+#endif // TE120
 
 	return false;
 }
@@ -2814,8 +2821,10 @@ bool CBasePlayer::CanPickupObject( CBaseEntity *pObject, float massLimit, float 
 		if ( pList[i]->IsHinged() )
 			return false;
 //TE120--
+#ifdef TE120
 		if ( pObject->HasSpawnFlags( SF_PHYSBOX_NEVER_PICK_UP ) )
 			return false;
+#endif // TE120
 //TE120--
 	}
 
@@ -2839,11 +2848,16 @@ bool CBasePlayer::CanPickupObject( CBaseEntity *pObject, float massLimit, float 
 		if ( !pProp && !pBox )
 			return false;
 //TE120--
+#ifdef TE120
 		if ( pProp && !(pProp->HasSpawnFlags( SF_PHYSPROP_ENABLE_ON_PHYSCANNON ) || pProp->GetExplosiveRadius() == 1337 ) )
 		{
 			pProp->EnableMotion();
 			return false;
 		}
+#else
+		if ( pProp && !(pProp->HasSpawnFlags( SF_PHYSPROP_ENABLE_ON_PHYSCANNON )) )
+			return false;
+#endif // TE120
 //TE120--
 		if ( pBox && !(pBox->HasSpawnFlags( SF_PHYSBOX_ENABLE_ON_PHYSCANNON )) )
 			return false;
@@ -3832,7 +3846,9 @@ void CBasePlayer::PreThink(void)
 	UpdateClientData();
 
 	CheckTimeBasedDamage();
+#ifdef TE120
 	CheckUsable();//TE120
+#endif // TE120
 	CheckSuitUpdate();
 
 	if ( GetObserverMode() > OBS_MODE_FREEZECAM )
@@ -5355,8 +5371,10 @@ bool CBasePlayer::HasWeapons( void )
 // Input  : &vecForce -
 //-----------------------------------------------------------------------------
 //TE120--
+#ifdef TE120
 ConVar physconcussion_maxhorizontalforce( "physconcussion_maxhorizontalforce", "430" );
 ConVar physconcussion_maxverticalforce( "physconcussion_maxverticalforce", "560" );
+#endif // TE120
 //TE120--
 
 void CBasePlayer::VelocityPunch( const Vector &vecForce )
@@ -5364,6 +5382,7 @@ void CBasePlayer::VelocityPunch( const Vector &vecForce )
 	// Clear onground and add velocity.
 	SetGroundEntity( NULL );
 //TE120--
+#ifdef TE120
 	// ApplyAbsVelocityImpulse(vecForce );
 
 	if ( vecForce != vec3_origin )
@@ -5405,10 +5424,11 @@ void CBasePlayer::VelocityPunch( const Vector &vecForce )
 				vecResult.z = -1 * physconcussion_maxverticalforce.GetFloat();
 			}
 
-			//DevMsg("Final Player Push: %f %f %f\n", vecResult.x, vecResult.y, vecResult.z ); //Debug
+			// DevMsg("Final Player Push: %f %f %f\n", vecResult.x, vecResult.y, vecResult.z ); //Debug
 			SetAbsVelocity( vecResult );
 		}
 	}
+#endif // TE120
 //TE120--
 }
 
@@ -6025,32 +6045,43 @@ void CBasePlayer::ImpulseCommands( )
 	m_nImpulse = 0;
 }
 
-#ifdef HL2_EPISODIC
-
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-static void CreateJalopy( CBasePlayer *pPlayer )
+static CBaseEntity* CreateVehicle(CBasePlayer* pPlayer, const char* name, const char* classname, const char* model, const char* script)
 {
-	// Cheat to create a jeep in front of the player
+	// Create a vehicle in front of the player
 	Vector vecForward;
-	AngleVectors( pPlayer->EyeAngles(), &vecForward );
-	CBaseEntity *pJeep = (CBaseEntity *)CreateEntityByName( "prop_vehicle_jeep" );
-	if ( pJeep )
+	AngleVectors(pPlayer->EyeAngles(), &vecForward);
+	CBaseEntity* pVehicle = (CBaseEntity*)CreateEntityByName(classname);
+	if (pVehicle)
 	{
-		Vector vecOrigin = pPlayer->GetAbsOrigin() + vecForward * 256 + Vector(0,0,64);
-		QAngle vecAngles( 0, pPlayer->GetAbsAngles().y - 90, 0 );
-		pJeep->SetAbsOrigin( vecOrigin );
-		pJeep->SetAbsAngles( vecAngles );
-		pJeep->KeyValue( "model", "models/vehicle.mdl" );
-		pJeep->KeyValue( "solid", "6" );
-		pJeep->KeyValue( "targetname", "jeep" );
-		pJeep->KeyValue( "vehiclescript", "scripts/vehicles/jalopy.txt" );
-		DispatchSpawn( pJeep );
-		pJeep->Activate();
-		pJeep->Teleport( &vecOrigin, &vecAngles, NULL );
+		Vector vecOrigin = pPlayer->GetAbsOrigin() + vecForward * 256 + Vector(0, 0, 64);
+		QAngle vecAngles(0, pPlayer->GetAbsAngles().y - 90, 0);
+		pVehicle->SetAbsOrigin(vecOrigin);
+		pVehicle->SetAbsAngles(vecAngles);
+		pVehicle->KeyValue("model", model);
+		pVehicle->KeyValue("solid", "6");
+		pVehicle->KeyValue("targetname", name);
+		pVehicle->KeyValue("vehiclescript", script);
+		DispatchSpawn(pVehicle);
+		pVehicle->Activate();
+		pVehicle->Teleport(&vecOrigin, &vecAngles, NULL);
+		return pVehicle;
 	}
+	return nullptr;
 }
+
+#ifdef HL2_EPISODIC
+
+//-----------------------------------------------------------------------------
+// Purpose: Cheat to create a jalopy in front of the player
+//-----------------------------------------------------------------------------
+static void CreateJalopy(CBasePlayer* pPlayer)
+{
+	CreateVehicle(pPlayer, "jeep", "prop_vehicle_jeep", "models/vehicle.mdl", "scripts/vehicles/jalopy.txt");
+}
+
 
 void CC_CH_CreateJalopy( void )
 {
@@ -6065,28 +6096,11 @@ static ConCommand ch_createjalopy("ch_createjalopy", CC_CH_CreateJalopy, "Spawn 
 #endif // HL2_EPISODIC
 
 //-----------------------------------------------------------------------------
-// Purpose:
+// Purpose: Cheat to create a jeep in front of the player
 //-----------------------------------------------------------------------------
 static void CreateJeep( CBasePlayer *pPlayer )
 {
-	// Cheat to create a jeep in front of the player
-	Vector vecForward;
-	AngleVectors( pPlayer->EyeAngles(), &vecForward );
-	CBaseEntity *pJeep = (CBaseEntity *)CreateEntityByName( "prop_vehicle_jeep" );
-	if ( pJeep )
-	{
-		Vector vecOrigin = pPlayer->GetAbsOrigin() + vecForward * 256 + Vector(0,0,64);
-		QAngle vecAngles( 0, pPlayer->GetAbsAngles().y - 90, 0 );
-		pJeep->SetAbsOrigin( vecOrigin );
-		pJeep->SetAbsAngles( vecAngles );
-		pJeep->KeyValue( "model", "models/buggy.mdl" );
-		pJeep->KeyValue( "solid", "6" );
-		pJeep->KeyValue( "targetname", "jeep" );
-		pJeep->KeyValue( "vehiclescript", "scripts/vehicles/jeep_test.txt" );
-		DispatchSpawn( pJeep );
-		pJeep->Activate();
-		pJeep->Teleport( &vecOrigin, &vecAngles, NULL );
-	}
+	CreateVehicle(pPlayer, "jeep", "prop_vehicle_jeep", "models/buggy.mdl", "scripts/vehicles/jeep_test.txt");
 }
 
 
@@ -6102,27 +6116,11 @@ static ConCommand ch_createjeep("ch_createjeep", CC_CH_CreateJeep, "Spawn jeep i
 
 
 //-----------------------------------------------------------------------------
-// Create an airboat in front of the specified player
+// Purpose: Cheat to create an airboat in front of the player
 //-----------------------------------------------------------------------------
 static void CreateAirboat( CBasePlayer *pPlayer )
 {
-	// Cheat to create a jeep in front of the player
-	Vector vecForward;
-	AngleVectors( pPlayer->EyeAngles(), &vecForward );
-	CBaseEntity *pJeep = ( CBaseEntity* )CreateEntityByName( "prop_vehicle_airboat" );
-	if ( pJeep )
-	{
-		Vector vecOrigin = pPlayer->GetAbsOrigin() + vecForward * 256 + Vector( 0,0,64 );
-		QAngle vecAngles( 0, pPlayer->GetAbsAngles().y - 90, 0 );
-		pJeep->SetAbsOrigin( vecOrigin );
-		pJeep->SetAbsAngles( vecAngles );
-		pJeep->KeyValue( "model", "models/airboat.mdl" );
-		pJeep->KeyValue( "solid", "6" );
-		pJeep->KeyValue( "targetname", "airboat" );
-		pJeep->KeyValue( "vehiclescript", "scripts/vehicles/airboat.txt" );
-		DispatchSpawn( pJeep );
-		pJeep->Activate();
-	}
+	CreateVehicle(pPlayer, "airboat", "prop_vehicle_airboat", "models/airboat.mdl", "scripts/vehicles/airboat.txt");
 }
 
 
@@ -6180,12 +6178,16 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 //TE120--
 	case 82:
 		// Cheat to create a jeep in front of the player
-		//CreateJeep( this );
+#ifndef TE120
+		CreateJeep( this );
+#endif // TE120
 		break;
 
 	case 83:
 		// Cheat to create a airboat in front of the player
-		//CreateAirboat( this );
+#ifndef TE120
+		CreateAirboat( this );
+#endif // TE120
 		break;
 
 	case 101:
@@ -6204,19 +6206,27 @@ void CBasePlayer::CheatImpulseCommands( int iImpulse )
 		GiveAmmo( 5,	"grenade");
 		GiveAmmo( 32,	"357" );
 		GiveAmmo( 16,	"XBowBolt" );
-
+#if defined(HL2_EPISODIC) && !defined(TE120)
+		GiveAmmo( 5,	"Hopwire" );
+#endif		
 		GiveNamedItem( "weapon_smg1" );
 		GiveNamedItem( "weapon_frag" );
 		GiveNamedItem( "weapon_crowbar" );
 		GiveNamedItem( "weapon_pistol" );
 		GiveNamedItem( "weapon_ar2" );
 		GiveNamedItem( "weapon_shotgun" );
+#ifdef TE120
 		GiveNamedItem( "weapon_physconcussion" );
-
+#else
+		GiveNamedItem( "weapon_physcannon" );
+		GiveNamedItem( "weapon_bugbait" );
+#endif // TE120
 		GiveNamedItem( "weapon_rpg" );
 		GiveNamedItem( "weapon_357" );
 		GiveNamedItem( "weapon_crossbow" );
-
+#ifdef HL2_EPISODIC
+		// GiveNamedItem( "weapon_magnade" );
+#endif
 		if ( GetHealth() < 100 )
 		{
 			TakeHealth( 25, DMG_GENERIC );
@@ -7593,6 +7603,7 @@ bool CBasePlayer::ClearUseEntity()
 	return false;
 }
 //TE120--
+#ifdef TE120
 //-----------------------------------------------------------------------------
 // Purpose: Let player know when his crosshair is on a usable
 //-----------------------------------------------------------------------------
@@ -7621,6 +7632,7 @@ void CBasePlayer::CheckUsable( void )
 		SetOnUsable(false);
 	}
 }
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------
@@ -8010,7 +8022,9 @@ void SendProxy_CropFlagsToPlayerFlagBitsLength( const SendProp *pProp, const voi
 		SendPropArray3		( SENDINFO_ARRAY3(m_iAmmo), SendPropInt( SENDINFO_ARRAY(m_iAmmo), -1, SPROP_VARINT | SPROP_UNSIGNED ) ),
 
 		SendPropInt			( SENDINFO( m_fOnTarget ), 2, SPROP_UNSIGNED ),
+#ifdef TE120
 		SendPropInt			( SENDINFO( m_fOnUsable ), 2, SPROP_UNSIGNED ),//TE120
+#endif // TE120
 
 		SendPropInt			( SENDINFO( m_nTickBase ), -1, SPROP_CHANGES_OFTEN ),
 		SendPropInt			( SENDINFO( m_nNextThinkTick ) ),

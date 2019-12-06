@@ -7,7 +7,9 @@
 
 #include "cbase.h"
 #include "shake.h"
+#ifdef TE120
 #include "te_effect_dispatch.h"//TE120
+#endif // TE120
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -60,7 +62,9 @@ END_DATADESC()
 #define SF_FADE_ONLYONE			0x0004
 #define SF_FADE_STAYOUT			0x0008
 //TE120--
+#ifdef TE120
 #define SF_FADE_DONTDIRTY		0x0010		// If true dont fade dirty lens
+#endif // TE120
 //TE120--
 
 //-----------------------------------------------------------------------------
@@ -87,6 +91,7 @@ void CEnvFade::InputFade( inputdata_t &inputdata )
 		fadeFlags |= FFADE_OUT;
 
 //TE120--
+#ifdef TE120
 		if ( m_spawnflags & SF_FADE_DONTDIRTY )
 		{
 			// Hack: If SF_FADE_DONTDIRTY flag is set, disable but
@@ -102,6 +107,7 @@ void CEnvFade::InputFade( inputdata_t &inputdata )
 			data.m_flScale = 0;
 			DispatchEffect( "CE_DisableDirtyLens", data );
 		}
+#endif // TE120
 //TE120--
 	}
 
@@ -119,7 +125,8 @@ void CEnvFade::InputFade( inputdata_t &inputdata )
 	{
 		if ( inputdata.pActivator && inputdata.pActivator->IsNetClient() )
 		{
-			UTIL_ScreenFade( inputdata.pActivator, m_clrRender, Duration(), HoldTime(), fadeFlags );
+			// Contains FFADE_PURGE which allows you to do fade in if you've done fade out with stayout flag enabled.
+			UTIL_ScreenFade(inputdata.pActivator, m_clrRender, Duration(), HoldTime(), fadeFlags | FFADE_PURGE);
 		}
 	}
 	else

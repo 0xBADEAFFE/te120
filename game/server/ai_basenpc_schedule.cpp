@@ -44,6 +44,7 @@ extern ConVar ai_use_think_optimizations;
 #define ShouldUseEfficiency() ( ai_use_think_optimizations.GetBool() && ai_use_efficiency.GetBool() )
 
 ConVar	ai_simulate_task_overtime( "ai_simulate_task_overtime", "0" );
+ConVar	ai_enhanced_perception("ai_enhanced_perception", "1", FCVAR_ARCHIVE);
 
 #define MAX_TASKS_RUN 10
 
@@ -209,7 +210,7 @@ void CAI_BaseNPC::SetSchedule( CAI_Schedule *pNewSchedule )
 			m_ScheduleHistory.Remove( SCHEDULE_HISTORY_SIZE );
 		}
 
-		assert( m_ScheduleHistory.Count() <= SCHEDULE_HISTORY_SIZE );
+		Assert( m_ScheduleHistory.Count() <= SCHEDULE_HISTORY_SIZE );
 
 		// No analysis until the vector is full!
 		if( m_ScheduleHistory.Count() == SCHEDULE_HISTORY_SIZE )
@@ -4433,13 +4434,30 @@ int CAI_BaseNPC::SelectAlertSchedule()
 		return SCHED_ALERT_REACT_TO_COMBAT_SOUND;
 	}
 
-	if ( HasCondition ( COND_HEAR_DANGER ) ||
-			  HasCondition ( COND_HEAR_PLAYER ) ||
-			  HasCondition ( COND_HEAR_WORLD  ) ||
-			  HasCondition ( COND_HEAR_BULLET_IMPACT ) ||
-			  HasCondition ( COND_HEAR_COMBAT ) )
+	// Enhanche ai perception behavior:
+	// as soon as NPC hears sounds that meet
+	// conditions they will investigate it
+	if (ai_enhanced_perception.GetBool())
 	{
-		return SCHED_ALERT_FACE_BESTSOUND;
+		if (HasCondition(COND_HEAR_DANGER) ||
+			HasCondition(COND_HEAR_PLAYER) ||
+			HasCondition(COND_HEAR_WORLD) ||
+			HasCondition(COND_HEAR_BULLET_IMPACT) ||
+			HasCondition(COND_HEAR_COMBAT))
+		{
+			return SCHED_INVESTIGATE_SOUND;
+		}
+	}
+	else
+	{
+		if (HasCondition(COND_HEAR_DANGER) ||
+			HasCondition(COND_HEAR_PLAYER) ||
+			HasCondition(COND_HEAR_WORLD) ||
+			HasCondition(COND_HEAR_BULLET_IMPACT) ||
+			HasCondition(COND_HEAR_COMBAT))
+		{
+			return SCHED_ALERT_FACE_BESTSOUND;
+		}
 	}
 
 	if ( gpGlobals->curtime - GetEnemies()->LastTimeSeen( AI_UNKNOWN_ENEMY ) < TIME_CARE_ABOUT_DAMAGE )

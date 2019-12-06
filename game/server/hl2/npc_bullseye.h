@@ -48,7 +48,9 @@ public:
 	void	SetPainPartner( CBaseEntity *pOther );
 	void	InputTargeted( inputdata_t &inputdata );
 	void	InputReleased( inputdata_t &inputdata );
-	void	InputPlayerFormation( inputdata_t &inputdata );//TE120
+#ifdef TE120
+	void	InputPlayerFormation( inputdata_t &inputdata ); // TE120
+#endif // TE120
 	bool	CanBecomeServerRagdoll( void ) { return false;	}
 
 	bool	CanBeAnEnemyOf( CBaseEntity *pEnemy );
@@ -62,7 +64,9 @@ protected:
 	bool			m_bPerfectAccuracy;	// Entities that shoot at me should be perfectly accurate
 	float			m_fAutoaimRadius;	// How much to influence player's autoaim.
 	float			m_flMinDistValidEnemy;
-	Vector			m_vecOffset;	// How much to offset when formation input is applied //TE120
+#ifdef TE120
+	Vector			m_vecOffset;	// How much to offset when formation input is applied // TE120
+#endif // TE120
 
 	DECLARE_DATADESC();
 };

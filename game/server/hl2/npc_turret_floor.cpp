@@ -462,10 +462,14 @@ void CNPC_FloorTurret::Deploy( void )
 	{
 		m_bActive = true;
 //TE120--
+#ifdef TE120
 		if ( !HasSpawnFlags(SF_FLOOR_TURRET_OUT_OF_AMMO) )
+#endif // TE120
 			SetActivity( (Activity) ACT_FLOOR_TURRET_OPEN );
+#ifdef TE120
 		else
 		 	SetActivity( (Activity) ACT_FLOOR_TURRET_CLOSE );
+#endif // TE120
 //TE120--
 		EmitSound( "NPC_FloorTurret.Deploy" );
 
@@ -477,10 +481,14 @@ void CNPC_FloorTurret::Deploy( void )
 	if ( IsActivityFinished() )
 	{
 //TE120--
+#ifdef TE120
 		if ( !HasSpawnFlags(SF_FLOOR_TURRET_OUT_OF_AMMO) )
+#endif // TE120
 			SetActivity( (Activity) ACT_FLOOR_TURRET_OPEN_IDLE );
+#ifdef TE120
 		else
 			SetActivity( (Activity) ACT_FLOOR_TURRET_CLOSED_IDLE );
+#endif // TE120
 //TE120--
 
 		m_flShotTime  = gpGlobals->curtime + 1.0f;
@@ -553,7 +561,9 @@ void CNPC_FloorTurret::OnPhysGunDrop( CBasePlayer *pPhysGunUser, PhysGunDrop_t R
 	if ( IRelationType( pPhysGunUser ) != D_HT )
 	{
 		m_flPlayerDropTime = gpGlobals->curtime + 2.0;
+#ifdef TE120
 		DevMsg( "Setting new drop time.\n" );//TE120
+#endif // TE120
 	}
 
 	// Restore our mass to the original value
@@ -566,6 +576,12 @@ void CNPC_FloorTurret::OnPhysGunDrop( CBasePlayer *pPhysGunUser, PhysGunDrop_t R
 //-----------------------------------------------------------------------------
 bool CNPC_FloorTurret::HasPreferredCarryAnglesForPlayer( CBasePlayer *pPlayer )
 {
+#ifndef TE120
+	// Don't use preferred angles on enemy turrets
+	if ( IRelationType( pPlayer ) == D_HT )
+		return false;
+		
+#endif // TE120
 	return m_bUseCarryAngles;
 }
 
@@ -638,6 +654,11 @@ float CNPC_FloorTurret::MaxYawSpeed( void )
 //-----------------------------------------------------------------------------
 bool CNPC_FloorTurret::WasJustDroppedByPlayer( void )
 {
+#ifndef TE120
+	if ( m_flPlayerDropTime > gpGlobals->curtime )
+		return true;
+
+#endif // TE120
 	return false;
 }
 
@@ -809,7 +830,11 @@ void CNPC_FloorTurret::SuppressThink( void )
 			}
 		}
 	}
+#ifdef TE120
 	else if ( !HasSpawnFlags(SF_FLOOR_TURRET_OUT_OF_AMMO) )//TE120
+#else
+	else
+#endif // TE120
 	{
 		SetActivity( (Activity) ACT_FLOOR_TURRET_OPEN_IDLE );
 	}
@@ -988,8 +1013,10 @@ void CNPC_FloorTurret::ActiveThink( void )
 			{
 				DryFire();
 //TE120--
+#ifdef TE120
 				if ( GetEnemy() != NULL && !m_bNoAlarmSounds )
 					EmitSound( "NPC_FloorTurret.Alert" );
+#endif // TE120
 //TE120--
 			}
 			else
@@ -1007,7 +1034,11 @@ void CNPC_FloorTurret::ActiveThink( void )
 			}
 		}
 	}
+#ifdef TE120
 	else if ( !HasSpawnFlags(SF_FLOOR_TURRET_OUT_OF_AMMO) )//TE120
+#else
+	else
+#endif // TE120
 	{
 		SetActivity( (Activity) ACT_FLOOR_TURRET_OPEN_IDLE );
 	}
@@ -1041,9 +1072,12 @@ void CNPC_FloorTurret::SearchThink( void )
 
 	SetNextThink( gpGlobals->curtime + 0.05f );
 //TE120--
+#ifdef TE120
 	if ( !HasSpawnFlags(SF_FLOOR_TURRET_OUT_OF_AMMO) )
-		SetActivity( (Activity) ACT_FLOOR_TURRET_OPEN_IDLE );
+#endif // TE120
 //TE120--
+		SetActivity( (Activity) ACT_FLOOR_TURRET_OPEN_IDLE );
+
 	//If our enemy has died, pick a new enemy
 	if ( ( GetEnemy() != NULL ) && ( GetEnemy()->IsAlive() == false ) )
 	{
@@ -1135,10 +1169,12 @@ void CNPC_FloorTurret::AutoSearchThink( void )
 		}
 	}
 //TE120--
+#ifdef TE120
 	if ( OnSide() )
 	{
 		StopSound( "NPC_FloorTurret.Alert" );
 	}
+#endif // TE120
 //TE120--
 }
 
@@ -1232,10 +1268,17 @@ bool CNPC_FloorTurret::IsValidEnemy( CBaseEntity *pEnemy )
 //-----------------------------------------------------------------------------
 bool CNPC_FloorTurret::CanBeAnEnemyOf( CBaseEntity *pEnemy )
 {
+#ifdef TE120
 	// If we're out of ammo everyone ignore me
 	if ( m_spawnflags & SF_FLOOR_TURRET_OUT_OF_AMMO )
 	{
-		return false;
+#else
+	// If we're out of ammo, make friendly companions ignore us
+	if ( m_spawnflags & SF_FLOOR_TURRET_OUT_OF_AMMO )
+	{
+		if ( pEnemy->Classify() == CLASS_PLAYER_ALLY_VITAL )
+#endif // TE120
+			return false;
 	}
 
 	// If we're on the side, we're never anyone's enemy
@@ -1368,9 +1411,32 @@ void CNPC_FloorTurret::InactiveThink( void )
 		ReturnToLife();
 		return;
 	}
+#ifndef TE120
 
-	SetNextThink( gpGlobals->curtime + 1.0f );
+	if ( IsCitizenTurret() )
+	{
+		// Blink if we have ammo or our current blink is "on" and we need to turn it off again
+		if ( HasSpawnFlags( SF_FLOOR_TURRET_OUT_OF_AMMO ) == false || m_bBlinkState )
+		{
+			// If we're on our side, ping and complain to the player
+			if ( m_bBlinkState == false )
+			{
+				// Ping when the light is going to come back on
+				EmitSound( "NPC_FloorTurret.AlarmPing" );
+			}
+
+			SetEyeState( TURRET_EYE_ALARM );
+			SetNextThink( gpGlobals->curtime + 0.25f );
+		}
+	}
+	else
+	{
+#endif // TE120
+		SetNextThink( gpGlobals->curtime + 1.0f );
 }
+#ifndef TE120
+}
+#endif // TE120
 
 //-----------------------------------------------------------------------------
 // Purpose:
@@ -1480,6 +1546,11 @@ bool CNPC_FloorTurret::PreThink( turretState_e state )
 		}
 		else
 		{
+#ifndef TE120
+			if ( HasSpawnFlags( SF_FLOOR_TURRET_OUT_OF_AMMO ) == false )
+			{
+				//Thrash around for a bit
+#endif // TE120
 				m_flThrashTime = gpGlobals->curtime + random->RandomFloat( 2.0f, 2.5f );
 				SetNextThink( gpGlobals->curtime + 0.05f );
 
@@ -1491,6 +1562,19 @@ bool CNPC_FloorTurret::PreThink( turretState_e state )
 				{
 					EmitSound( "NPC_FloorTurret.Alarm" );
 				}
+#ifndef TE120
+			}
+			else
+			{
+				// Take away the laser
+				UTIL_Remove( m_hLaser );
+				m_hLaser = NULL;
+
+				// Become inactive
+				SetThink( &CNPC_FloorTurret::InactiveThink );
+				SetEyeState( TURRET_EYE_DEAD );
+			}
+#endif // TE120
 
 			//Stop being targetted
 			SetState( NPC_STATE_DEAD );

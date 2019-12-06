@@ -113,6 +113,7 @@ public:
 	}
 
 //TE120--
+#ifdef TE120
 	void SetFiredGrabbedOutput( bool bFiredGrabbedOutput )
 	{
 		m_bFiredGrabbedOutput = bFiredGrabbedOutput;
@@ -159,11 +160,13 @@ public:
 	}
 
 	CSpriteTrail *GetGlowTrail() { return m_pGlowTrail; }
+#endif // TE120
 //TE120--
 
 	void SetOriginalOwner( CBaseEntity *pEntity ) { m_hOriginalOwner = pEntity; }
 
 //TE120--
+#ifdef TE120
 	void SetNState( char nState )
 	{
 		m_nState = nState;
@@ -173,6 +176,7 @@ public:
 	{
 		m_flLastBounceTime = flLastBounceTime;
 	}
+#endif // TE120
 //TE120--
 
 	CBaseEntity *GetOriginalOwner() { return m_hOriginalOwner; }
@@ -183,6 +187,12 @@ private:
 
 	float GetBallHoldDissolveTime();
 	float GetBallHoldSoundRampTime();
+
+#ifndef TE120
+	// Pow!
+	void DoExplosion( );
+#endif // TE120
+
 	void StartAnimating( void );
 	void StopAnimating( void );
 
@@ -190,8 +200,10 @@ private:
 	bool DissolveEntity( CBaseEntity *pEntity );
 
 //TE120--
+#ifdef TE120
 	virtual void OnHitEntity( CBaseEntity *pHitEntity, float flSpeed, int index, gamevcollisionevent_t *pEvent );
 	virtual void DoImpactEffect( const Vector &preVelocity, int index, gamevcollisionevent_t *pEvent );
+#endif // TE120
 //TE120--
 
 	// Bounce inside the spawner:
@@ -200,10 +212,18 @@ private:
 	bool IsAttractiveTarget( CBaseEntity *pEntity );
 
 	// Deflects the ball toward enemies in case of a collision
+#ifdef TE120
 	virtual void DeflectTowardEnemy( float flSpeed, int index, gamevcollisionevent_t *pEvent );//TE120
+#else
+	void DeflectTowardEnemy( float flSpeed, int index, gamevcollisionevent_t *pEvent );
+#endif // TE120
 
 	// Is this something we can potentially dissolve?
+#ifdef TE120
 	virtual bool IsHittableEntity( CBaseEntity *pHitEntity );//TE120
+#else
+	bool IsHittableEntity( CBaseEntity *pHitEntity );
+#endif // TE120
 
 	// Sucky.
 	void WhizSoundThink();
@@ -214,6 +234,14 @@ private:
 
 	void FadeOut( float flDuration );
 
+
+#ifndef TE120
+	bool OutOfBounces( void ) const
+	{
+		return ( m_nState == STATE_LAUNCHED && m_nMaxBounces != 0 && m_nBounceCount >= m_nMaxBounces );
+	}
+#endif // TE120
+
 private:
 
 	int		m_nBounceCount;
@@ -223,6 +251,9 @@ private:
 	float	m_flLastBounceTime;
 
 	bool	m_bFiredGrabbedOutput;
+#ifndef TE120
+	bool	m_bStruckEntity;		// Has hit an entity already (control accuracy)
+#endif // TE120
 	bool	m_bWeaponLaunched;		// Means this was fired from the AR2
 	bool	m_bForward;				// Movement direction in ball spawner
 
@@ -245,6 +276,7 @@ private:
 	CNetworkVar( bool, m_bHeld );
 	CNetworkVar( bool, m_bLaunched );
 //TE120--
+#ifdef TE120
 protected:
 
 	// Pow!
@@ -257,6 +289,7 @@ protected:
 	}
 
 	bool	m_bStruckEntity;		// Has hit an entity already (control accuracy)
+#endif // TE120
 //TE120--
 	CNetworkVar( float, m_flRadius );
 };

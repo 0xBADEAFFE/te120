@@ -540,11 +540,14 @@ void CViewRender::OnRenderStart()
 			{
 #ifndef _XBOX
 //TE120--
+#ifdef TE120
 				if ( player->m_Local.m_iHideHUD & HIDEHUD_ALL )
 					gHUD.m_flMouseSensitivity = 0.15f;
-				else // reset to saved sensitivity
-					gHUD.m_flMouseSensitivity = 0;
+				else
+#endif // TE120
 //TE120--
+					// reset to saved sensitivity
+					gHUD.m_flMouseSensitivity = 0;
 #endif
 			}
 			else
@@ -561,11 +564,13 @@ void CViewRender::OnRenderStart()
 					zoom_sensitivity_ratio.GetFloat(); // sensitivity scale factor
 #ifndef _XBOX
 //TE120--
+#ifdef TE120
 				if ( player->m_Local.m_iHideHUD & HIDEHUD_ALL )
 					gHUD.m_flMouseSensitivity = 0.15f;
 				else
-					gHUD.m_flMouseSensitivity = gHUD.m_flFOVSensitivityAdjust * sensitivity.GetFloat(); // regular sensitivity
+#endif // TE120
 //TE120--
+					gHUD.m_flMouseSensitivity = gHUD.m_flFOVSensitivityAdjust * sensitivity.GetFloat(); // regular sensitivity
 #endif
 			}
 		}
@@ -745,7 +750,7 @@ void CViewRender::SetUpViews()
 	float flFOVOffset = fDefaultFov - view.fov;
 
 	//Adjust the viewmodel's FOV to move with any FOV offsets on the viewer's end
-	view.fovViewmodel = g_pClientMode->GetViewModelFOV() - flFOVOffset;
+	view.fovViewmodel = abs( g_pClientMode->GetViewModelFOV() - flFOVOffset );
 
 	if ( UseVR() )
 	{
